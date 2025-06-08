@@ -15,6 +15,8 @@ public partial class Message
 
     public string Content { get; set; } = null!;
 
+    public string? ContentUrl { get; set; }
+
     public DateTime? SentAt { get; set; }
 
     public bool? IsRead { get; set; }

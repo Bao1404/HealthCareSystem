@@ -1,0 +1,205 @@
+﻿@model HealthCareSystem.ViewModels.AuthViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+<section class="auth-section">
+    <div class="container">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-lg-10 col-xl-8">
+                <div class="auth-container">
+                    <div class="row g-0 shadow-lg rounded-4 overflow-hidden">
+                        <!-- Left Side - Image/Info -->
+                        <div class="col-lg-6 auth-info-side">
+                            <div class="auth-info h-100 d-flex flex-column justify-content-center p-5">
+                                <div class="text-center text-white">
+                                    <div class="auth-logo mb-4">
+                                        <i class="fas fa-heartbeat display-1"></i>
+                                    </div>
+
+                                    <h2 class="fw-bold mb-3">Welcome to MediCare</h2>
+                                    <p class="lead mb-4">Your health is our top priority. Join thousands of patients who trust us with their healthcare needs.</p>
+                                    <div class="auth-features">
+                                        <div class="feature-item mb-3">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span>24/7 Medical Support</span>
+                                        </div>
+                                        <div class="feature-item mb-3">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span>Expert Medical Professionals</span>
+                                        </div>
+                                        <div class="feature-item mb-3">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span>Secure Patient Portal</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <span>Easy Appointment Booking</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Side - Forms -->
+                        <div class="col-lg-6 auth-form-side">
+                            <div class="auth-forms p-5">
+                                <!-- Form Toggle Buttons -->
+                                <div class="form-toggle mb-4">
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-primary active" id="loginToggle">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" id="registerToggle">
+                                            <i class="fas fa-user-plus me-2"></i>Register
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Login Form -->
+                                <div class="auth-form @(Model.ActiveForm == "login" ? "" : "d-none")" id="loginForm">
+                                    @Html.Partial("Partials/_LoginPartial", Model.Login)
+                                </div>
+
+                                <!-- Register Form -->
+                                <div class="auth-form @(Model.ActiveForm == "register" ? "" : "d-none")" id="registerForm">
+                                    <div id="registerFormContainer">
+                                        @Html.Partial("Partials/_RegisterPartial", Model.Register)
+                                    </div>
+                                </div>
+
+                                <!-- Forgot Password Form -->
+                                <div class="auth-form d-none" id="forgotPasswordForm">
+                                    <div class="text-center mb-4">
+                                        <h3 class="fw-bold text-dark">Reset Password</h3>
+                                        <p class="text-muted">Enter your email to receive reset instructions</p>
+                                    </div>
+
+                                    <form id="forgotPasswordFormElement" novalidate>
+                                        <div class="mb-3">
+                                            <label for="forgotEmail" class="form-label">
+                                                <i class="fas fa-envelope me-2 text-primary"></i>Email Address
+                                            </label>
+                                            <input type="email" class="form-control" id="forgotEmail" name="email" required>
+                                            <div class="invalid-feedback">
+                                                Please provide a valid email address.
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary w-100 py-3 mb-3">
+                                            <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                                        </button>
+
+                                        <div class="text-center">
+                                            <a href="#" class="text-primary text-decoration-none" id="backToLoginLink">
+                                                <i class="fas fa-arrow-left me-2"></i>Back to Login
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Overlay + Success Modal giữ nguyên -->
+
+<script>
+    function showForm(formType) {
+        document.getElementById("loginForm")?.classList.add("d-none");
+        document.getElementById("registerForm")?.classList.add("d-none");
+        document.getElementById("forgotPasswordForm")?.classList.add("d-none");
+
+        if (formType === 'login') {
+            document.getElementById("loginForm")?.classList.remove("d-none");
+        } else if (formType === 'register') {
+            document.getElementById("registerForm")?.classList.remove("d-none");
+        } else if (formType === 'forgot') {
+            document.getElementById("forgotPasswordForm")?.classList.remove("d-none");
+        }
+    }
+
+    function setActiveToggle(activeBtn, inactiveBtn) {
+        activeBtn?.classList.add('active');
+        inactiveBtn?.classList.remove('active');
+    }
+
+    function rebindAllEvents() {
+        // Gắn lại nút chuyển tab login/register
+        const loginToggle = document.getElementById("loginToggle");
+        const registerToggle = document.getElementById("registerToggle");
+
+        if (loginToggle && registerToggle) {
+            loginToggle.addEventListener("click", function () {
+                showForm("login");
+                setActiveToggle(this, registerToggle);
+            });
+
+            registerToggle.addEventListener("click", function () {
+                showForm("register");
+                setActiveToggle(this, loginToggle);
+            });
+        }
+
+        // Toggle hiện/ẩn mật khẩu đăng ký
+        const toggleRegisterPassword = document.getElementById("toggleRegisterPassword");
+        if (toggleRegisterPassword) {
+            toggleRegisterPassword.addEventListener("click", function () {
+                const input = document.getElementById("registerPassword");
+                const icon = this.querySelector("i");
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                } else {
+                    input.type = "password";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                }
+            });
+        }
+
+        // Ajax submit form Register
+        const registerForm = document.getElementById("registerFormElement");
+        if (registerForm) {
+            registerForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                fetch("/Register", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById("registerFormContainer").innerHTML = html;
+                        rebindAllEvents(); // Gắn lại toàn bộ sau khi form bị thay
+                    });
+            });
+        }
+    }
+
+    // Gọi khi trang load
+    window.addEventListener("DOMContentLoaded", function () {
+        const activeForm = document.body.getAttribute("data-active-form") || "login";
+        console.log("ActiveForm in JS:", activeForm);
+        showForm(activeForm);
+
+        const loginToggle = document.getElementById("loginToggle");
+        const registerToggle = document.getElementById("registerToggle");
+        if (activeForm === "register") {
+            setActiveToggle(registerToggle, loginToggle);
+        } else {
+            setActiveToggle(loginToggle, registerToggle);
+        }
+
+        rebindAllEvents(); // Khởi động toàn bộ
+    });
+</script>
+

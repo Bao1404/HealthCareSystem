@@ -18,4 +18,6 @@ public partial class AuditLog
     public DateTime? ChangedAt { get; set; }
 
     public string? Changes { get; set; }
+
+    public virtual User? ChangedByNavigation { get; set; }
 }

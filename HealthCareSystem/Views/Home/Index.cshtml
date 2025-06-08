@@ -1,8 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var userId = Context.Session.GetObject<int>("userId");
+    var userName = Context.Session.GetObject<string>("userName");
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>@userId, @userName</p>
 </div>
