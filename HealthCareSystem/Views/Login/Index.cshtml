@@ -4,7 +4,7 @@
 @{
     Layout = "_LayoutLogin";
 }
-
+@model LoginViewModel;
 <div class="row justify-content-center align-items-center min-vh-100">
     <div class="col-md-6 col-lg-5">
         <div class="text-center mb-4">
@@ -17,15 +17,18 @@
                 <div class="text-center mb-4">
                     <h2 class="fw-bold mb-2">Welcome back</h2>
                     <p class="text-secondary">Sign in to access your health dashboard</p>
+                    <span class="text-danger">@ViewBag.ErrorMessage</span>
                 </div>
-                <form id="loginForm">
+                <form id="loginForm" action="/Login" method="POST">
                     <div class="mb-4">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control form-control-lg" id="email" required>
+                        <span class="text-danger" asp-validation-for="Email"></span>
+                        <input asp-for="Email" type="email" class="form-control form-control-lg" id="email">
                     </div>
                     <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control form-control-lg" id="password" required>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg" id="password">
                     </div>
                     <div class="mb-4 form-check">
                         <input type="checkbox" class="form-check-input" id="remember">
@@ -41,5 +44,3 @@
         </div>
     </div>
 </div>
-
-<script src="login.js"></script>
