@@ -25,6 +25,8 @@ public partial class User
 
     public bool? IsActive { get; set; }
 
+    public virtual ICollection<Aiconversation> Aiconversations { get; set; } = new List<Aiconversation>();
+
     public virtual ICollection<Appointment> AppointmentDoctorUsers { get; set; } = new List<Appointment>();
 
     public virtual ICollection<Appointment> AppointmentPatientUsers { get; set; } = new List<Appointment>();
