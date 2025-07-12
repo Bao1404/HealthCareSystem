@@ -16,5 +16,6 @@ namespace Services
             _userRepository = new UserRepository();
         }
         public Task<User> GetUserByEmailAndPassword(string email, string password) => _userRepository.GetUserByEmailAndPassword(email, password);
+        public Task<User> GetUserById(int userId) => _userRepository.GetUserById(userId);
     }
 }

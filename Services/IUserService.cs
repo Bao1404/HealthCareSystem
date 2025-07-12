@@ -10,5 +10,6 @@ namespace Services
     public interface IUserService
     {
         Task<User> GetUserByEmailAndPassword(string email, string password);
+        Task<User> GetUserById(int userId);
     }
 }

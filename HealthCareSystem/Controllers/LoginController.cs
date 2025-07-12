@@ -33,7 +33,7 @@ namespace HealthCareSystem.Controllers
                 
                 if(account.Role.Equals("Patient"))
                 {
-                    return RedirectToAction("Index", "Admin");
+                    return RedirectToAction("Index", "User");
                 }
                 if(account.Role.Equals("Doctor"))
                 {
@@ -41,7 +41,7 @@ namespace HealthCareSystem.Controllers
                 }
                 if(account.Role.Equals("Admin"))
                 {
-                    return RedirectToAction("Index", "User");
+                    return RedirectToAction("Index", "Admin");
                 }
             }
             ViewBag.ErrorMessage = "Invalid email or password.";

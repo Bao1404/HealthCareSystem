@@ -47,5 +47,16 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<User> GetUserById(int userId)
+        {
+            try
+            {
+                return await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

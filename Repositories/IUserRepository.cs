@@ -10,5 +10,6 @@ namespace Repositories
     public interface IUserRepository
     {
         Task<User> GetUserByEmailAndPassword(string email, string password);
+        Task<User> GetUserById(int userId);
     }
 }
