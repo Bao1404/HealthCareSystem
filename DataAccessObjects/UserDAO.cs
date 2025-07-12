@@ -58,5 +58,23 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<User> CheckUserExist(string email)
+        {
+            try
+            {
+                return await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task CreateUser(User user)
+        {
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+        }
     }
 }

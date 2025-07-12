@@ -29,7 +29,5 @@ public partial class Patient
 
     public DateTime? UpdatedAt { get; set; }
 
-    public virtual ICollection<MedicalHistory> MedicalHistories { get; set; } = new List<MedicalHistory>();
-
     public virtual User User { get; set; } = null!;
 }
