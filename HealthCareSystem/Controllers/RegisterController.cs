@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HealthCareSystem.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HealthCareSystem.Controllers
 {
@@ -7,6 +8,11 @@ namespace HealthCareSystem.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+        [HttpPost("/Register")]
+        public async Task<IActionResult> Register(RegisterViewModel vm)
+        {
+            
         }
     }
 }

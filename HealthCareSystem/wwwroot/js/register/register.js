@@ -235,10 +235,10 @@ function validateField(event) {
 
     // Phone validation
     if (field.type === "tel" && value) {
-        const phoneRegex = /^[+]?[1-9][\d]{0,15}$/
-        if (!phoneRegex.test(value.replace(/[\s\-$$$$]/g, ""))) {
-            showFieldError(field, "Please enter a valid phone number.")
-            isValid = false
+        const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+        if (!phoneRegex.test(value)) {
+            showFieldError(field, "Please enter a valid Vietnamese phone number (e.g., 0905xxxxxx).");
+            isValid = false;
         }
     }
 

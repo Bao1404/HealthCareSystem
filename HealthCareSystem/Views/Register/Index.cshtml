@@ -46,15 +46,10 @@
 
                             <div class="step-content">
                                 <div class="row">
-                                    <div class="col-md-6 mb-3">
+                                    <div class="mb-3">
                                         <label for="firstName" class="form-label">First Name *</label>
                                         <input type="text" class="form-control" id="firstName" name="firstName" required>
                                         <div class="invalid-feedback">Please enter your first name.</div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="lastName" class="form-label">Last Name *</label>
-                                        <input type="text" class="form-control" id="lastName" name="lastName" required>
-                                        <div class="invalid-feedback">Please enter your last name.</div>
                                     </div>
                                 </div>
 
@@ -68,25 +63,6 @@
                                     <label for="phone" class="form-label">Phone Number *</label>
                                     <input type="tel" class="form-control" id="phone" name="phone" required>
                                     <div class="invalid-feedback">Please enter your phone number.</div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="dateOfBirth" class="form-label">Date of Birth *</label>
-                                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
-                                        <div class="invalid-feedback">Please enter your date of birth.</div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="gender" class="form-label">Gender *</label>
-                                        <select class="form-select" id="gender" name="gender" required>
-                                            <option value="">Select Gender</option>
-                                            <option value="male">Male</option>
-                                            <option value="female">Female</option>
-                                            <option value="other">Other</option>
-                                            <option value="prefer-not-to-say">Prefer not to say</option>
-                                        </select>
-                                        <div class="invalid-feedback">Please select your gender.</div>
-                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -146,14 +122,6 @@
                                         <div class="invalid-feedback">Passwords do not match.</div>
                                     </div>
                                 </div>
-
-                                <div class="mb-4 form-check">
-                                    <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                                    <label class="form-check-label text-secondary" for="terms">
-                                        I agree to the <a href="#" class="text-primary text-decoration-none">Terms of Service</a> and <a href="#" class="text-primary text-decoration-none">Privacy Policy</a>
-                                    </label>
-                                    <div class="invalid-feedback">You must agree to the terms and conditions.</div>
-                                </div>
                             </div>
 
                             <div class="step-actions">
@@ -183,6 +151,32 @@
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
+                                        <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                                        <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                                        <div class="invalid-feedback">Please enter your date of birth.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="gender" class="form-label">Gender *</label>
+                                        <select class="form-select" id="gender" name="gender" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select your gender.</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="mb-3">
+                                        <label for="address" class="form-label">Address</label>
+                                        <input type="text" class="form-control" id="address" name="address" required>
+                                        <div class="invalid-feedback">Please enter your address.</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
                                         <label for="bloodType" class="form-label">Blood Type</label>
                                         <select class="form-select" id="bloodType" name="bloodType">
                                             <option value="">Select Blood Type</option>
@@ -198,7 +192,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="emergencyContact" class="form-label">Emergency Contact</label>
+                                        <label for="emergencyContact" class="form-label">Emergency Contact*</label>
                                         <input type="tel" class="form-control" id="emergencyContact" name="emergencyContact" placeholder="Emergency contact number">
                                     </div>
                                 </div>
@@ -253,24 +247,14 @@
                                             <label for="asthma">Asthma</label>
                                         </div>
                                         <div class="condition-item">
-                                            <input type="checkbox" id="allergies" name="conditions[]" value="allergies">
-                                            <label for="allergies">Allergies</label>
-                                        </div>
-                                        <div class="condition-item">
                                             <input type="checkbox" id="none" name="conditions[]" value="none">
                                             <label for="none">None of the above</label>
                                         </div>
                                     </div>
                                 </div>
-
                                 <div class="mb-3">
-                                    <label for="medications" class="form-label">Current Medications</label>
-                                    <textarea class="form-control" id="medications" name="medications" rows="3" placeholder="List any medications you're currently taking (optional)"></textarea>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="allergiesDetails" class="form-label">Allergies Details</label>
-                                    <textarea class="form-control" id="allergiesDetails" name="allergiesDetails" rows="2" placeholder="Describe any allergies or adverse reactions (optional)"></textarea>
+                                    <label for="allergiesDetails" class="form-label">Allergies</label>
+                                    <textarea class="form-control" id="allergiesDetails" name="allergiesDetails" rows="2" placeholder="Name any allergies"></textarea>
                                 </div>
                             </div>
 
@@ -329,3 +313,6 @@
         </div>
     </div>
 </div>
+
+
+<script src="~/js/register/register.js"></script>
