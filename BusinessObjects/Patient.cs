@@ -15,15 +15,21 @@ public partial class Patient
 
     public string? Allergies { get; set; }
 
-    public string? MedicalHistory { get; set; }
+    public int? Weight { get; set; }
+
+    public int? Height { get; set; }
 
     public decimal? Bmi { get; set; }
 
     public string? Address { get; set; }
 
+    public string? EmergencyPhoneNumber { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<MedicalHistory> MedicalHistories { get; set; } = new List<MedicalHistory>();
 
     public virtual User User { get; set; } = null!;
 }
