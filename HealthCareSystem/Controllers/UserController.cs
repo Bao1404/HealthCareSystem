@@ -1,13 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjects;
+using Microsoft.AspNetCore.Mvc;
+using Services;
+using System.Threading.Tasks;
 
 namespace HealthCareSystem.Controllers
 {
     public class UserController : Controller
     {
-        public IActionResult Index()
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+        public async Task<IActionResult> Index()
         {
             ViewData["ActiveMenu"] = "Dashboard";
-            return View();
+            var currentUser = HttpContext.Session.GetInt32("UserId");
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+            return View("Index", user);
         }
         public IActionResult Appointments()
         {

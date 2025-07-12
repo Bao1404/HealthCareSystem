@@ -9,7 +9,7 @@ namespace HealthCareSystem.Models
         [StringLength(100, ErrorMessage = "Username must be at least 3 characters long.", MinimumLength = 3)]
         public string FullName { get; set; }
         [Required]
-        public string EmaiAddress { get; set; }
+        public string Email { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
         [Required]
@@ -18,6 +18,8 @@ namespace HealthCareSystem.Models
         [Required]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+        [Required]
+        public string Role { get; set; } 
         [Required]
         public DateOnly Dob { get; set; }
         [Required]
@@ -31,5 +33,6 @@ namespace HealthCareSystem.Models
         [Required]
         public int Height { get; set; }
         public decimal Bmi { get; set; }
+        public string? Allergies { get; set; }
     }
 }

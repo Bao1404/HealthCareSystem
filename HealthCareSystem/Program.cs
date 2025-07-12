@@ -1,5 +1,7 @@
+using BusinessObjects;
 using HealthCareSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using Services;
 
 namespace HealthCareSystem
 {
@@ -12,6 +14,11 @@ namespace HealthCareSystem
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddDbContext<HealthCareSystemContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
+            
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IPatientService, PatientService>();
 
             builder.Services.AddSession();
             var app = builder.Build();
@@ -29,6 +36,8 @@ namespace HealthCareSystem
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",
