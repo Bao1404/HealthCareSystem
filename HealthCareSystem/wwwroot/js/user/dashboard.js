@@ -9,10 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const currentDate = new Date()
 
-function updateUserInfo() {
-    const userName = localStorage.getItem("userName") || "John Doe"
-    document.getElementById("userName").textContent = userName
-}
+//function updateUserInfo() {
+//    const userName = @Model.FullName
+//    document.getElementById("userName").textContent = userName
+//}
 
 function loadUpcomingAppointments() {
     const appointments = [
