@@ -21,9 +21,9 @@ public partial class Appointment
 
     public string? Notes { get; set; }
 
-    public virtual User DoctorUser { get; set; } = null!;
+    public virtual Doctor DoctorUser { get; set; } = null!;
 
     public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 
-    public virtual User PatientUser { get; set; } = null!;
+    public virtual Patient PatientUser { get; set; } = null!;
 }

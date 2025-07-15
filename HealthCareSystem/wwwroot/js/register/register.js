@@ -235,10 +235,10 @@ function validateField(event) {
 
     // Phone validation
     if (field.type === "tel" && value) {
-        const phoneRegex = /^[+]?[1-9][\d]{0,15}$/
-        if (!phoneRegex.test(value.replace(/[\s\-$$$$]/g, ""))) {
-            showFieldError(field, "Please enter a valid phone number.")
-            isValid = false
+        const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+        if (!phoneRegex.test(value)) {
+            showFieldError(field, "Please enter a valid Vietnamese phone number (e.g., 0905xxxxxx).");
+            isValid = false;
         }
     }
 
@@ -336,17 +336,8 @@ function calculateBMI() {
 
     // Convert to metric units
     let weightKg = weight
-    let heightM = height
+    let heightM = height / 100
 
-    if (weightUnit === "lbs") {
-        weightKg = weight * 0.453592
-    }
-
-    if (heightUnit === "ft") {
-        heightM = height * 0.3048
-    } else if (heightUnit === "cm") {
-        heightM = height / 100
-    }
 
     // Calculate BMI
     const bmi = weightKg / (heightM * heightM)
@@ -391,23 +382,23 @@ function togglePassword(fieldId) {
     }
 }
 
-function processSignup() {
-    // Simulate account creation
-    setTimeout(() => {
-        // Collect form data
-        const formData = new FormData(document.getElementById("multiStepSignupForm"))
-        const userData = Object.fromEntries(formData.entries())
+//function processSignup() {
+//    // Simulate account creation
+//    setTimeout(() => {
+//        // Collect form data
+//        const formData = new FormData(document.getElementById("multiStepSignupForm"))
+//        const userData = Object.fromEntries(formData.entries())
 
-        // Store user data (in real app, this would be sent to server)
-        localStorage.setItem("isLoggedIn", "true")
-        localStorage.setItem("userEmail", userData.email)
-        localStorage.setItem("userName", `${userData.firstName} ${userData.lastName}`)
-        localStorage.setItem("userRole", selectedRole)
-        localStorage.setItem("userData", JSON.stringify(userData))
+//        // Store user data (in real app, this would be sent to server)
+//        localStorage.setItem("isLoggedIn", "true")
+//        localStorage.setItem("userEmail", userData.email)
+//        localStorage.setItem("userName", `${userData.firstName} ${userData.lastName}`)
+//        localStorage.setItem("userRole", selectedRole)
+//        localStorage.setItem("userData", JSON.stringify(userData))
 
-        console.log("User registered:", userData)
-    }, 1000)
-}
+//        console.log("User registered:", userData)
+//    }, 1000)
+//}
 
 function goToDashboard() {
     window.location.href = "dashboard-modern.html"

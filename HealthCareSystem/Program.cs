@@ -18,6 +18,7 @@ namespace HealthCareSystem
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
             
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IPatientService, PatientService>();
 
             builder.Services.AddSession();
             var app = builder.Build();
