@@ -55,7 +55,7 @@ public partial class HealthCareSystemContext : DbContext
     {
         modelBuilder.Entity<Aiconversation>(entity =>
         {
-            entity.HasKey(e => e.AiconversationId).HasName("PK__AIConver__6604C7F29DE04617");
+            entity.HasKey(e => e.AiconversationId).HasName("PK__AIConver__6604C7F28D8B1968");
 
             entity.ToTable("AIConversations");
 
@@ -77,7 +77,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Aimessage>(entity =>
         {
-            entity.HasKey(e => e.AimessageId).HasName("PK__AIMessag__E8DCEE0360A85D78");
+            entity.HasKey(e => e.AimessageId).HasName("PK__AIMessag__E8DCEE03426D2835");
 
             entity.ToTable("AIMessages");
 
@@ -100,7 +100,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Appointment>(entity =>
         {
-            entity.HasKey(e => e.AppointmentId).HasName("PK__Appointm__8ECDFCC2BEB0CA71");
+            entity.HasKey(e => e.AppointmentId).HasName("PK__Appointm__8ECDFCC2FEE4D93C");
 
             entity.Property(e => e.AppointmentDateTime).HasColumnType("datetime");
             entity.Property(e => e.CreatedAt)
@@ -111,20 +111,20 @@ public partial class HealthCareSystemContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
 
-            entity.HasOne(d => d.DoctorUser).WithMany(p => p.AppointmentDoctorUsers)
+            entity.HasOne(d => d.DoctorUser).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.DoctorUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Appointme__Docto__412EB0B6");
+                .HasConstraintName("FK__Appointme__Docto__403A8C7D");
 
-            entity.HasOne(d => d.PatientUser).WithMany(p => p.AppointmentPatientUsers)
+            entity.HasOne(d => d.PatientUser).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PatientUserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Appointme__Patie__403A8C7D");
+                .HasConstraintName("FK__Appointme__Patie__412EB0B6");
         });
 
         modelBuilder.Entity<Article>(entity =>
         {
-            entity.HasKey(e => e.ArticleId).HasName("PK__Articles__9C6270E893EFB058");
+            entity.HasKey(e => e.ArticleId).HasName("PK__Articles__9C6270E8D7F44104");
 
             entity.Property(e => e.ArticleImg).IsUnicode(false);
             entity.Property(e => e.PublishedAt)
@@ -138,7 +138,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<AuditLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__AuditLog__5E548648B4E77CC9");
+            entity.HasKey(e => e.LogId).HasName("PK__AuditLog__5E548648F3FC135E");
 
             entity.Property(e => e.Action).HasMaxLength(20);
             entity.Property(e => e.ChangedAt)
@@ -149,7 +149,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Conversation>(entity =>
         {
-            entity.HasKey(e => e.ConversationId).HasName("PK__Conversa__C050D877112195B7");
+            entity.HasKey(e => e.ConversationId).HasName("PK__Conversa__C050D877A8B90245");
 
             entity.HasIndex(e => new { e.PatientUserId, e.DoctorUserId }, "UC_Patient_Doctor").IsUnique();
 
@@ -173,7 +173,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Doctor>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Doctors__1788CC4C1D10EA21");
+            entity.HasKey(e => e.UserId).HasName("PK__Doctors__1788CC4CFC01FB42");
 
             entity.Property(e => e.UserId).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt)
@@ -196,7 +196,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<MedicalHistory>(entity =>
         {
-            entity.HasKey(e => e.HistoryId).HasName("PK__MedicalH__4D7B4ABDA2018F1A");
+            entity.HasKey(e => e.HistoryId).HasName("PK__MedicalH__4D7B4ABD1D9427DB");
 
             entity.Property(e => e.ConditionName).HasMaxLength(200);
 
@@ -208,7 +208,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<MedicalRecord>(entity =>
         {
-            entity.HasKey(e => e.RecordId).HasName("PK__MedicalR__FBDF78E9ADFCCDC0");
+            entity.HasKey(e => e.RecordId).HasName("PK__MedicalR__FBDF78E9E78C16F3");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -234,7 +234,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.MessageId).HasName("PK__Messages__C87C0C9C30E3FC1D");
+            entity.HasKey(e => e.MessageId).HasName("PK__Messages__C87C0C9C1E121B2E");
 
             entity.Property(e => e.IsRead).HasDefaultValue(false);
             entity.Property(e => e.MessageType).HasMaxLength(20);
@@ -258,7 +258,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Patient>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Patients__1788CC4C0E1EE894");
+            entity.HasKey(e => e.UserId).HasName("PK__Patients__1788CC4C4866BE30");
 
             entity.Property(e => e.UserId).ValueGeneratedNever();
             entity.Property(e => e.Address).HasMaxLength(200);
@@ -283,7 +283,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A380307AF45");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A38BBAAFD68");
 
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.CreatedAt)
@@ -302,7 +302,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Prescription>(entity =>
         {
-            entity.HasKey(e => e.PrescriptionId).HasName("PK__Prescrip__40130832A64B16F4");
+            entity.HasKey(e => e.PrescriptionId).HasName("PK__Prescrip__401308325E165089");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -329,7 +329,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.ReviewId).HasName("PK__Reviews__74BC79CECD32A538");
+            entity.HasKey(e => e.ReviewId).HasName("PK__Reviews__74BC79CE3D5F9ABA");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -351,7 +351,7 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<Specialty>(entity =>
         {
-            entity.HasKey(e => e.SpecialtyId).HasName("PK__Specialt__D768F6A8B9455C77");
+            entity.HasKey(e => e.SpecialtyId).HasName("PK__Specialt__D768F6A8BD745176");
 
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -364,9 +364,9 @@ public partial class HealthCareSystemContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C36DE0F62");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CC4C081A7129");
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D105341FEF74AA").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D10534891AE0BB").IsUnique();
 
             entity.Property(e => e.AvatarUrl).IsUnicode(false);
             entity.Property(e => e.CreatedAt)

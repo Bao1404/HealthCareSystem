@@ -21,6 +21,7 @@ namespace HealthCareSystem
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
             
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IPatientService, PatientService>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
             builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 

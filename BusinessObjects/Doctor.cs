@@ -21,6 +21,8 @@ public partial class Doctor
 
     public DateTime? UpdatedAt { get; set; }
 
+    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
     public virtual Specialty? Specialty { get; set; }
 
     public virtual User User { get; set; } = null!;

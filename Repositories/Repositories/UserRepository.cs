@@ -11,7 +11,9 @@ namespace Repositories.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        public async Task<User> GetUserByEmailAndPassword(string email, string password) => await UserDAO.Instance.GetUserByEmailAndPassword(email, password);
-        public async Task<User> GetUserById(int userId) => await UserDAO.Instance.GetUserById(userId);
+        public Task<User> GetUserByEmailAndPassword(string email, string password) => UserDAO.Instance.GetUserByEmailAndPassword(email, password);
+        public Task<User> GetUserById(int userId) => UserDAO.Instance.GetUserById(userId);
+        public Task<User> CheckUserExist(string email) => UserDAO.Instance.CheckUserExist(email);
+        public Task CreateUser(User user) => UserDAO.Instance.CreateUser(user);
     }
 }
