@@ -1,5 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+@{
+    var userId = Context.Session.GetInt32("UserId");
+}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,7 +57,7 @@
                 </div>
                 <span class="sidebar-text">Schedule</span>
             </a>
-            <a asp-controller="Doctor" asp-action="Profile" class="sidebar-item @(ViewData["ActiveMenu"] == "Profile" ? "active" : "")">
+            <a asp-controller="Doctor" asp-action="Profile" asp-route-id="@userId" class="sidebar-item">
                 <div class="sidebar-icon">
                     <i class="fas fa-user-md"></i>
                 </div>

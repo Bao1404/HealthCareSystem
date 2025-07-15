@@ -11,32 +11,6 @@ function initializeProfile() {
     document.getElementById("profileName").textContent = doctorName
 }
 
-function loadProfileData() {
-    // Load doctor profile data (in real app, this would come from API)
-    const profileData = {
-        firstName: "Sarah",
-        lastName: "Johnson",
-        specialty: "Cardiologist",
-        email: "sarah.johnson@healthcare.com",
-        phone: "+1 (555) 123-4567",
-        license: "MD123456789",
-        medicalSchool: "Harvard Medical School",
-        hospital: "City General Hospital",
-        experience: "15 years",
-        rating: "4.9",
-        totalPatients: "1,247",
-        monthlyAppointments: "156",
-        avatar: "/placeholder.svg?height=120&width=120",
-    }
-
-    // Update profile display
-    document.getElementById("profileEmail").textContent = profileData.email
-    document.getElementById("medicalSchool").textContent = profileData.medicalSchool
-
-    // Store in localStorage for editing
-    localStorage.setItem("doctorProfile", JSON.stringify(profileData))
-}
-
 function setupEventListeners() {
     // Toggle switches
     const toggles = document.querySelectorAll('input[type="checkbox"]')

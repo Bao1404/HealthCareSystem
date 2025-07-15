@@ -1,9 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Repositories.Interface;
+using Services.Interface;
+using Services.Service;
 
 namespace HealthCareSystem.Controllers
 {
     public class DoctorController : Controller
     {
+        private readonly IDoctorService _doctorService;
+
+        public DoctorController(IDoctorService doctorService)
+        {
+            _doctorService = doctorService;
+        }
+
         public IActionResult Index()
         {
             ViewData["ActiveMenu"] = "Dashboard";
@@ -24,10 +34,15 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "Schedule";
             return View();
         }
-        public IActionResult Profile()
+        public async Task<IActionResult> ProfileAsync(int id)
         {
-            ViewData["ActiveMenu"] = "Profile";
-            return View();
+            var doctor = await _doctorService.GetDoctorsByIdAsync(id);
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+            return View(doctor);
         }
         public IActionResult Calendar()
         {
