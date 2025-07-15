@@ -1,6 +1,6 @@
 ﻿using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
-using Services;
+using Services.Interface;
 using System.Threading.Tasks;
 
 namespace HealthCareSystem.Controllers
