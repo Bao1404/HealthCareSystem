@@ -1,5 +1,4 @@
 ﻿using BusinessObjects;
-using DataAccessObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Repositories
 {
-    public class PatientRepository : IPatientRepository
+    public interface IAiConversationRepository
     {
-        public Task CreatePatient(Patient patient) => PatientDAO.CreatePatient(patient);
+        Task CreateConversation(Aiconversation conversation);
+        Task<Aiconversation> GetConversationByUserId(int userId);
     }
 }

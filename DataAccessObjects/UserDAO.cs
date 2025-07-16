@@ -10,36 +10,11 @@ namespace DataAccessObjects
 {
     public class UserDAO
     {
-        private static UserDAO instance;
-        private readonly HealthCareSystemContext _context;
-        private static readonly object _lock = new object();
-        public static UserDAO Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (_lock)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new UserDAO();
-                        }
-                    }
-                }
-                return instance;
-            }
-        }
-
-        public UserDAO()
-        {
-            _context = new HealthCareSystemContext();
-        }
-
-        public async Task<User> GetUserByEmailAndPassword(string email, string password)
+        public static async Task<User> GetUserByEmailAndPassword(string email, string password)
         {
             try
             {
+                var _context = new HealthCareSystemContext();
                 return await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email) && u.Password.Equals(password));
             }
             catch (Exception ex)
@@ -47,10 +22,11 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<User> GetUserById(int userId)
+        public static async Task<User> GetUserById(int userId)
         {
             try
             {
+                var _context = new HealthCareSystemContext();
                 return await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             }
             catch (Exception ex)
@@ -58,10 +34,11 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<User> CheckUserExist(string email)
+        public static async Task<User> CheckUserExist(string email)
         {
             try
             {
+                var _context = new HealthCareSystemContext();
                 return await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
             }
             catch (Exception ex)
@@ -69,12 +46,18 @@ namespace DataAccessObjects
                 throw new Exception(ex.Message);
             }
         }
-        public async Task CreateUser(User user)
+        public static async Task CreateUser(User user)
         {
-
+            try
+            {
+                var _context = new HealthCareSystemContext();
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

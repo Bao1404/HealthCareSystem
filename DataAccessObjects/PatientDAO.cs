@@ -9,34 +9,11 @@ namespace DataAccessObjects
 {
     public class PatientDAO
     {
-        private readonly HealthCareSystemContext _context;
-        private static PatientDAO instance;
-        private static readonly object _lock = new object();
-        public static PatientDAO Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (_lock)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new PatientDAO();
-                        }
-                    }
-                }
-                return instance;
-            }
-        }
-        public PatientDAO()
-        {
-            _context = new HealthCareSystemContext();
-        }
-        public async Task CreatePatient(Patient patient)
+        public static async Task CreatePatient(Patient patient)
         {
             try
             {
+                var _context = new HealthCareSystemContext();
                 _context.Patients.Add(patient);
                 await _context.SaveChangesAsync();
             }
