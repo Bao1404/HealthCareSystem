@@ -2,6 +2,7 @@
 @{
     Layout = "_LayoutDoctor";
     ViewData["Title"] = "Profile";
+
 }
 <!-- Main Content -->
 <div class="main-content">
@@ -115,7 +116,16 @@
                                 </div>
                                 <div class="metric-info">
                                     <h6>Total Patients</h6>
-                                    <span class="metric-value">1,247</span>
+                                    <span class="metric-value">
+                                        @{
+                                            var distinctPatientIds = Model.Appointments
+                                            .GroupBy(a => a.PatientUserId)
+                                            .Select(g => g.Key)
+                                            .ToList();
+                                            var uniquePatientCount = distinctPatientIds.Count();
+                                        }
+                                        @uniquePatientCount
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -125,8 +135,15 @@
                                     <i class="fas fa-calendar-check"></i>
                                 </div>
                                 <div class="metric-info">
-                                    <h6>Appointments This Month</h6>
-                                    <span class="metric-value">156</span>
+                                    <h6>Total Appointments</h6>
+                                    @if (Model.Appointments != null)
+                                    {
+                                        <span>@Model.Appointments.Count()</span>
+                                    }
+                                    else
+                                    {
+                                        <span>0</span>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -147,8 +164,8 @@
                                     <i class="fas fa-clock"></i>
                                 </div>
                                 <div class="metric-info">
-                                    <h6>@Html.DisplayFor(model => model.Experience)</h6>
-                                    <span class="metric-value">15</span>
+                                    <h6>Experience</h6>
+                                    <span class="metric-value">@Html.DisplayFor(model => model.Experience)</span>
                                 </div>
                             </div>
                         </div>
