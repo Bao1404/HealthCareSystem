@@ -1,12 +1,15 @@
 ﻿using BusinessObjects;
 using Repositories;
+using Repositories.Interface;
+using Repositories.Repositories;
+using Services.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services
+namespace Services.Service
 {
     public class UserService : IUserService
     {
