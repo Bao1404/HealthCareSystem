@@ -1,7 +1,6 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using HealthCareSystem.Models;
-using Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace HealthCareSystem.Controllers;
 

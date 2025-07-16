@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HealthCareSystem.Models
 {
@@ -19,7 +18,7 @@ namespace HealthCareSystem.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
         [Required]
-        public string Role { get; set; } 
+        public string Role { get; set; }
         [Required]
         public DateOnly Dob { get; set; }
         [Required]

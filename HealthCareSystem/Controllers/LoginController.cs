@@ -27,19 +27,19 @@ namespace HealthCareSystem.Controllers
             string password = vm.Password;
 
             var account = await _userService.GetUserByEmailAndPassword(email, password);
-            if(account != null)
+            if (account != null)
             {
                 HttpContext.Session.SetInt32("UserId", account.UserId);
-                
-                if(account.Role.Equals("Patient"))
+
+                if (account.Role.Equals("Patient"))
                 {
                     return RedirectToAction("Index", "User");
                 }
-                if(account.Role.Equals("Doctor"))
+                if (account.Role.Equals("Doctor"))
                 {
                     return RedirectToAction("Index", "Doctor");
                 }
-                if(account.Role.Equals("Admin"))
+                if (account.Role.Equals("Admin"))
                 {
                     return RedirectToAction("Index", "Admin");
                 }
