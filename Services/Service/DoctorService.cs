@@ -17,5 +17,11 @@ namespace Services.Service
         {
             return _doctorRepository.GetDoctorsByIdAsync(id);
         }
+        public async Task<List<Doctor>> GetDoctorsAsync() => 
+            await _doctorRepository.GetDoctorsAsync();
+        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId) => 
+            await _doctorRepository.GetBySpecialtyAsync(specialtyId);
+        public async Task<Doctor?> GetByIdAsync(int doctorUserId) => 
+            await _doctorRepository.GetByIdAsync(doctorUserId);
     }
 }

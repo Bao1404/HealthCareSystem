@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
+using Repositories.Interface;
 
-namespace Repositories
+namespace Repositories.Repositories
 {
     public class PatientRepository : IPatientRepository
     {
@@ -20,6 +21,10 @@ namespace Repositories
             {
                 throw new Exception(ex.Message);
             }
+        }
+        public async Task<Patient?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Patients.FindAsync(userId);
         }
     }
 }

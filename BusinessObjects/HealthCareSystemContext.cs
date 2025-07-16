@@ -47,7 +47,7 @@ public partial class HealthCareSystemContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=DESKTOP-8UMJ219\\SQLEXPRESS;Database=HealthCareSystem;User Id=sa;Password=123123;TrustServerCertificate=true;Trusted_Connection=SSPI;Encrypt=false");
+        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-ND49I6JT;Database=HealthCareSystem;User Id=sa;Password=123;TrustServerCertificate=true;Trusted_Connection=SSPI;Encrypt=false");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
