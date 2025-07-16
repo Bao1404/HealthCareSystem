@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Repositories.Interface;
 using Services.Interface;
-using Services.Service;
 
 namespace HealthCareSystem.Controllers
 {

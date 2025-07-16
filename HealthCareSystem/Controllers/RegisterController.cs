@@ -69,7 +69,7 @@ namespace HealthCareSystem.Controllers
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     };
-                    
+
                     await _patientService.CreatePatient(user.Patient);
                 }
                 HttpContext.Session.SetInt32("UserId", user.UserId);

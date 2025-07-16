@@ -1,6 +1,6 @@
 using BusinessObjects;
-using HealthCareSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
 using Repositories.Interface;
 using Repositories.Repositories;
 using Services;
@@ -20,11 +20,14 @@ namespace HealthCareSystem
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
-            
+
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+            builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+
 
             builder.Services.AddSession();
             var app = builder.Build();
