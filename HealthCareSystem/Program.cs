@@ -1,8 +1,8 @@
-using BusinessObjects;
+﻿using BusinessObjects;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Interface;
+using Repositories.IRepositories;
 using Repositories.Repositories;
-using Services;
 using Services.Interface;
 using Services.Service;
 
@@ -20,26 +20,30 @@ namespace HealthCareSystem
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
 
+            // Register repositories and services
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
             builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-
+            builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+            builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddRazorPages(); // ✅ Thêm dòng này để tránh lỗi
             builder.Services.AddScoped<IAppointmentService, AppointmentService>();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
-
-
             builder.Services.AddSession();
+            builder.Services.AddSignalR();
+
             var app = builder.Build();
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -49,12 +53,18 @@ namespace HealthCareSystem
             app.UseRouting();
 
             app.UseAuthorization();
-
             app.UseSession();
 
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            // Map endpoints (must be after UseRouting)
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chathub"); // ✅ socket endpoint
+                endpoints.MapRazorPages(); // ✅ Optional if using RazorPages
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
 
             app.Run();
         }

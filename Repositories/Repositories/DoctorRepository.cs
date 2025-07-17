@@ -34,5 +34,6 @@ namespace Repositories.Repositories
         {
             return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
         }
+
     }
 }

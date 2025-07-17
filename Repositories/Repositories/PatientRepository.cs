@@ -26,5 +26,6 @@ namespace Repositories.Repositories
         {
             return await _context.Patients.FindAsync(userId);
         }
+
     }
 }

@@ -319,6 +319,14 @@ namespace HealthCareSystem.Controllers
         }
         public IActionResult Messages()
         {
+            var patientId = HttpContext.Session.GetInt32("UserId");
+
+            if (patientId == null)
+            {
+                return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
+            }
+
+            ViewData["PatientId"] = patientId; // nếu muốn gửi ra View
             ViewData["ActiveMenu"] = "Messages";
             return View();
         }
