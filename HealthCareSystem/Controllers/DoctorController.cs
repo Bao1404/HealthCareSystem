@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 using BusinessObjects;
+using HealthCareSystem.Models;
 
 namespace HealthCareSystem.Controllers
 {
@@ -63,10 +64,18 @@ namespace HealthCareSystem.Controllers
             }
             return View(doctor);
         }
-        public IActionResult Calendar()
+        public async Task<IActionResult> Calendar(int? year, int? month)
         {
             ViewData["ActiveMenu"] = "Calendar";
-            return View();
+            
+            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+            var currentDate = year.HasValue && month.HasValue 
+                ? new DateTime(year.Value, month.Value, 1) 
+                : new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+            var calendarViewModel = await BuildCalendarViewModelAsync(doctorId, currentDate);
+            
+            return View(calendarViewModel);
         }
         public IActionResult Messages()
         {
@@ -197,6 +206,100 @@ namespace HealthCareSystem.Controllers
             {
                 return Json(new { success = false, message = "Error retrieving appointment information." });
             }
+        }
+
+        private async Task<CalendarViewModel> BuildCalendarViewModelAsync(int doctorId, DateTime currentMonth)
+        {
+            // Get appointments for the month
+            var monthAppointments = await _appointmentService.GetAppointmentsByMonthAsync(doctorId, currentMonth);
+            
+            // Get today's appointments
+            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
+            
+            // Get upcoming appointments (next 7 days)
+            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(doctorId);
+            var nextWeekAppointments = upcomingAppointments.Where(a => a.AppointmentDateTime <= DateTime.Now.AddDays(7)).ToList();
+
+            var calendarViewModel = new CalendarViewModel
+            {
+                CurrentMonth = currentMonth,
+                DoctorId = doctorId,
+                TodayAppointments = MapToCalendarItems(todayAppointments),
+                UpcomingAppointments = MapToCalendarItems(nextWeekAppointments),
+                CalendarDays = BuildCalendarDays(currentMonth, monthAppointments)
+            };
+
+            return calendarViewModel;
+        }
+
+        private List<CalendarDay> BuildCalendarDays(DateTime currentMonth, List<Appointment> monthAppointments)
+        {
+            var calendarDays = new List<CalendarDay>();
+            
+            // Get the first day of the month and find the start of the calendar grid
+            var firstDayOfMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+            var startDate = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
+            
+            // Build 42 days (6 weeks) for the calendar grid
+            for (int i = 0; i < 42; i++)
+            {
+                var currentDate = startDate.AddDays(i);
+                var dayAppointments = monthAppointments
+                    .Where(a => a.AppointmentDateTime.Date == currentDate.Date)
+                    .ToList();
+
+                calendarDays.Add(new CalendarDay
+                {
+                    Date = currentDate,
+                    IsCurrentMonth = currentDate.Month == currentMonth.Month,
+                    IsToday = currentDate.Date == DateTime.Today,
+                    Appointments = MapToCalendarItems(dayAppointments),
+                    AppointmentCount = dayAppointments.Count
+                });
+            }
+
+            return calendarDays;
+        }
+
+        private List<AppointmentCalendarItem> MapToCalendarItems(List<Appointment> appointments)
+        {
+            return appointments.Select(a => new AppointmentCalendarItem
+            {
+                AppointmentId = a.AppointmentId,
+                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
+                AppointmentDateTime = a.AppointmentDateTime,
+                Status = a.Status ?? "Unknown",
+                Notes = a.Notes ?? "",
+                AppointmentType = GetAppointmentType(a.Notes),
+                StatusColor = GetStatusColor(a.Status),
+                TimeDisplay = a.AppointmentDateTime.ToString("HH:mm"),
+                DateDisplay = a.AppointmentDateTime.ToString("MMM dd")
+            }).ToList();
+        }
+
+        private string GetAppointmentType(string? notes)
+        {
+            if (string.IsNullOrEmpty(notes)) return "General";
+            
+            var lowerNotes = notes.ToLower();
+            if (lowerNotes.Contains("follow-up")) return "Follow-up";
+            if (lowerNotes.Contains("check-up")) return "Check-up";
+            if (lowerNotes.Contains("emergency")) return "Emergency";
+            if (lowerNotes.Contains("consultation")) return "Consultation";
+            
+            return "General";
+        }
+
+        private string GetStatusColor(string? status)
+        {
+            return status?.ToLower() switch
+            {
+                "pending" => "warning",
+                "confirmed" => "primary",
+                "completed" => "success",
+                "cancelled" => "danger",
+                _ => "secondary"
+            };
         }
     }
 }
