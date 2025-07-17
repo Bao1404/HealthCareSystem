@@ -1,31 +1,32 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
     Layout = "_LayoutUser";
-    ViewData["Title"] = "Doctors";
+    ViewData["Title"] = "List of doctors";
 }
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
     <header class="header">
-        <h1 class="header-title">Find Doctors</h1>
+        <h1 class="header-title">
+            Available Doctors
+        </h1>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search doctors or specialties..." id="searchInput">
+            <input type="text" class="search-input" placeholder="Find a doctor or specialist..." id="searchInput">
         </div>
         <div class="header-actions">
             <button class="notification-btn">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">3</span>
             </button>
-            <div class="user-profile" onclick="window.location.href='profile.html'">
-                <img src="/placeholder.svg?height=32&width=32" alt="User" class="user-avatar">
-                <div class="user-info">
-                    <h6 id="userName">John Doe</h6>
-                    <p>Patient</p>
+            <a asp-action="Profile" asp-controller="User">
+                <div class="user-profile">
+                    <img src="@(ViewBag.CurrentUser?.AvatarUrl ?? "/images/default-user.png")" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <h6 id="userName">@(ViewBag.CurrentUser?.FullName ?? "User")</h6>
+                        <p>Patient</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 
@@ -35,11 +36,40 @@
         <div class="dashboard-grid">
             <div class="dashboard-card span-2">
                 <div class="card-header">
-                    <h5 class="card-title">Available Doctors</h5>
+                    <h5 class="card-title">
+                        List of doctors
+                    </h5>
                 </div>
                 <div class="card-content">
                     <div class="doctors-grid" id="doctorsGrid">
-                        <!-- Populated by JavaScript -->
+                        @foreach (var doctor in ViewBag.Doctors as List<HealthCareSystem.Models.DoctorViewModel>)
+                        {
+                            <div class="doctor-card" data-specialty="@doctor.SpecialtyId">
+                                <div class="doctor-avatar">
+                                    <img src="@(string.IsNullOrEmpty(doctor.AvatarUrl) ? "/images/default-doctor.png" : doctor.AvatarUrl)"
+                                         alt="@doctor.FullName" class="avatar-img">
+                                </div>
+                                <div class="doctor-info">
+                                    <h6 class="doctor-name">BS. @doctor.FullName</h6>
+                                    <p class="doctor-specialty">@doctor.SpecialtyName</p>
+                                    @if (!string.IsNullOrEmpty(doctor.Experience))
+                                    {
+                                        <p class="doctor-experience">@doctor.Experience</p>
+                                    }
+                                    @if (doctor.Rating.HasValue)
+                                    {
+                                        <div class="doctor-rating">
+                                            <span class="rating-stars">⭐ @doctor.Rating.Value.ToString("F1")</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="doctor-actions">
+                                    <button class="btn btn-sm btn-primary" onclick="bookWithDoctor(@doctor.UserId)">
+                                        Đặt lịch
+                                    </button>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -47,11 +77,25 @@
             <!-- Filters -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h5 class="card-title">Filter by Specialty</h5>
+                    <h5 class="card-title">
+                        Filter by specialty
+                    </h5>
                 </div>
                 <div class="card-content">
                     <div class="specialty-filters" id="specialtyFilters">
-                        <!-- Populated by JavaScript -->
+                        <div class="filter-option">
+                            <input type="radio" id="all-specialties" name="specialty-filter" value="" checked>
+                            <label for="all-specialties">
+                                All specialties
+                            </label>
+                        </div>
+                        @foreach (var specialty in ViewBag.Specialties as List<HealthCareSystem.Models.SpecialtyViewModel>)
+                        {
+                            <div class="filter-option">
+                                <input type="radio" id="specialty-@specialty.SpecialtyId" name="specialty-filter" value="@specialty.SpecialtyId">
+                                <label for="specialty-@specialty.SpecialtyId">@specialty.Name</label>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -60,4 +104,51 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/user/doctors.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const specialtyFilters = document.querySelectorAll('input[name="specialty-filter"]');
+        const doctorCards = document.querySelectorAll('.doctor-card');
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterDoctors();
+        });
+
+        // Specialty filter functionality
+        specialtyFilters.forEach(filter => {
+            filter.addEventListener('change', function() {
+                filterDoctors();
+            });
+        });
+
+        function filterDoctors() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedSpecialty = document.querySelector('input[name="specialty-filter"]:checked').value;
+
+            doctorCards.forEach(card => {
+                const doctorName = card.querySelector('.doctor-name').textContent.toLowerCase();
+                const doctorSpecialty = card.querySelector('.doctor-specialty').textContent.toLowerCase();
+                const cardSpecialtyId = card.getAttribute('data-specialty');
+
+                const matchesSearch = doctorName.includes(searchTerm) || doctorSpecialty.includes(searchTerm);
+                const matchesSpecialty = selectedSpecialty === '' || cardSpecialtyId === selectedSpecialty;
+
+                if (matchesSearch && matchesSpecialty) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    function bookWithDoctor(doctorId) {
+        // Redirect to appointments page with pre-selected doctor
+        window.location.href = `/User/Appointments?doctorId=${doctorId}`;
+    }
+</script>
+
+

@@ -5,6 +5,7 @@ let conversations = []
 document.addEventListener("DOMContentLoaded", () => {
     initializeMessages()
     loadConversations()
+
     setupEventListeners()
 })
 
@@ -133,57 +134,137 @@ function initializeMessages() {
     ]
 }
 
-function loadConversations() {
+async function loadConversations() {
     const container = document.getElementById("conversationsList")
     if (!container) return
 
-    container.innerHTML = conversations
-        .map(
-            (conversation) => `
-      <div class="conversation-item ${conversation.unreadCount > 0 ? "unread" : ""}" onclick="selectConversation(${conversation.id})">
-        <div class="conversation-avatar">
-          <img src="${conversation.avatar}" alt="${conversation.patientName}">
-          <div class="status-indicator ${conversation.status}"></div>
-        </div>
-        <div class="conversation-content">
-          <div class="conversation-header">
-            <h6 class="conversation-name">${conversation.patientName}</h6>
-            <span class="conversation-time">${conversation.lastMessageTime}</span>
-          </div>
-          <p class="conversation-specialty">${conversation.patientInfo}</p>
-          <p class="conversation-preview">${conversation.lastMessage}</p>
-        </div>
-        ${conversation.unreadCount > 0 ? `<span class="unread-badge">${conversation.unreadCount}</span>` : ""}
-      </div>
-    `,
-        )
-        .join("")
+    const doctorId = localStorage.getItem("doctorId")
+
+    console.log("Loaded doctorId:", doctorId); // kiểm tra giá trị
+
+    if (!doctorId) {
+        console.error("doctorId not found in localStorage");
+        return;
+    }
+
+    if (!doctorId) {
+        container.innerHTML = "<p>No doctor ID found.</p>"
+        return
+    }
+
+    try {
+        const response = await fetch(`/api/ApiConversation/doctor/${doctorId}`)
+        if (!response.ok) throw new Error("Failed to fetch")
+
+        const data = await response.json()
+        conversations = data
+
+        container.innerHTML = conversations
+            .map((conversation) => `
+                <div class="conversation-item" onclick="selectConversation(${conversation.conversationId})">
+                   <div class="conversation-avatar">
+                        <img src="${conversation.patientUser?.avatarUrl || '/placeholder.svg?height=48&width=48'}" alt="${conversation.patientUser?.fullName || 'Patient'}">
+                        <div class="status-indicator online"></div>
+                    </div>
+                    <div class="conversation-content">
+                        <div class="conversation-header">
+                            <h6 class="conversation-name">${conversation.patientUser?.fullName || 'Patient'}</h6>
+                            <span class="conversation-time">${new Date(conversation.updatedAt).toLocaleTimeString()}</span>
+                        </div>
+                        <p class="conversation-specialty">ID: ${conversation.patientUser?.userId}</p>
+                        <p class="conversation-preview">Click to view messages</p>
+                    </div>
+                </div>
+            `)
+            .join("")
+    } catch (err) {
+        console.error("Error:", err)
+        container.innerHTML = "<p>Failed to load conversations.</p>"
+    }
 }
 
 function selectConversation(conversationId) {
+    console.log("🔍 Selected conversationId:", conversationId); // In ra ID đã chọn
+
     // Remove active class from all conversations
     document.querySelectorAll(".conversation-item").forEach((item) => {
-        item.classList.remove("active")
-    })
+        item.classList.remove("active");
+    });
 
     // Add active class to selected conversation
-    const selectedConversationElement = event.currentTarget
-    selectedConversationElement.classList.add("active")
+    const selectedConversationElement = event.currentTarget;
+    selectedConversationElement.classList.add("active");
 
     // Find the conversation
-    currentConversation = conversations.find((c) => c.id === conversationId)
-    if (!currentConversation) return
+    currentConversation = conversations.find((c) => c.conversationId === conversationId);
+    if (!currentConversation) {
+        console.warn("⚠️ Conversation not found");
+        return;
+    }
 
     // Mark as read
-    currentConversation.unreadCount = 0
-    selectedConversationElement.classList.remove("unread")
-    const badge = selectedConversationElement.querySelector(".unread-badge")
-    if (badge) badge.remove()
+    currentConversation.unreadCount = 0;
+    selectedConversationElement.classList.remove("unread");
+    const badge = selectedConversationElement.querySelector(".unread-badge");
+    if (badge) badge.remove();
 
     // Show chat interface
-    showChatInterface()
-    loadMessages()
+    showChatInterface();
+
+    // Connect to SignalR immediately when a conversation is selected
+    setupSignalR(conversationId);
+
+    console.log("🟢 Setup SignalR for conversationId:", conversationId);
+    // 🟢 Gọi API lấy message
+    loadMessagesFromApi(conversationId);
 }
+
+
+
+async function loadMessagesFromApi(conversationId) {
+    const messagesContainer = document.getElementById("chatMessages");
+    messagesContainer.innerHTML = "<p>Loading...</p>";
+
+    try {
+        const res = await fetch(`/api/APIMessage/conversation/${conversationId}`);
+        if (!res.ok) throw new Error("Failed to load messages");
+
+        const messages = await res.json();
+        console.log("✅ Loaded messages from API:", messages);
+
+        messagesContainer.innerHTML = messages
+            .map((message) => {
+                const sender = message.sender || {};
+                const senderRole = sender.role || "Unknown";
+                const senderName = sender.fullName || "Unknown";
+                const senderAvatar = sender.avatarUrl || "/placeholder.svg?height=36&width=36"; // ✅ avatar từ API
+
+                return `
+                    <div class="message ${senderRole === "Doctor" ? "user-message" : "doctor-message"}">
+                        <div class="message-avatar">
+                            <img src="${senderAvatar}" alt="${senderName}">
+                        </div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-sender">${senderRole === "Doctor" ? "You" : senderName}</span>
+                                <span class="message-time">${new Date(message.sentAt).toLocaleTimeString()}</span>
+                            </div>
+                            <div class="message-text">${message.content}</div>
+                        </div>
+                    </div>
+                `;
+            })
+            .join("");
+
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } catch (err) {
+        console.error("❌ Error loading messages:", err);
+        messagesContainer.innerHTML = "<p>Failed to load messages.</p>";
+    }
+}
+
+
+
 
 function showChatInterface() {
     if (!currentConversation) return
@@ -193,18 +274,20 @@ function showChatInterface() {
     document.getElementById("chatInputContainer").style.display = "block"
 
     // Update chat header
-    document.getElementById("chatAvatar").src = currentConversation.avatar
+    document.getElementById("chatAvatar").src = currentConversation.patientUser?.avatarUrl
     document.getElementById("chatPatientName").textContent = currentConversation.patientName
     document.getElementById("chatPatientInfo").textContent = currentConversation.patientInfo
-
+    console.log(chatAvatar)
+    console.log(currentConversation.avatarU)
     // Hide empty chat message
     const emptyChat = document.querySelector(".empty-chat")
     if (emptyChat) emptyChat.style.display = "none"
 }
 
 function loadMessages() {
-    if (!currentConversation) return
 
+    if (!currentConversation) return
+    setupSignalR(conversationId);
     const messagesContainer = document.getElementById("chatMessages")
     messagesContainer.innerHTML = currentConversation.messages
         .map(
@@ -215,7 +298,7 @@ function loadMessages() {
         </div>
         <div class="message-content">
           <div class="message-header">
-            <span class="message-sender">${message.sender === "doctor" ? "You" : currentConversation.patientName}</span>
+            <span class="message-sender">${message.sender === "doctor" ? "You" : currentConversation.chat-avatar}</span>
             <span class="message-time">${message.time}</span>
           </div>
           <div class="message-text">${message.text}</div>
@@ -264,49 +347,91 @@ function filterConversations(searchTerm) {
     })
 }
 
-function sendMessage(event) {
-    event.preventDefault()
+let connection = null;
 
-    if (!currentConversation) return
-
-    const messageInput = document.getElementById("messageInput")
-    const messageText = messageInput.value.trim()
-
-    if (!messageText) return
-
-    // Create new message
-    const newMessage = {
-        id: currentConversation.messages.length + 1,
-        sender: "doctor",
-        text: messageText,
-        time: new Date().toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        }),
-        timestamp: new Date(),
+async function setupSignalR(conversationId) {
+    if (connection) {
+        // If already connected to SignalR, return early
+        console.log("Already connected to SignalR");
+        return;
     }
 
-    // Add message to conversation
-    currentConversation.messages.push(newMessage)
-    currentConversation.lastMessage = messageText
-    currentConversation.lastMessageTime = "Just now"
+    // Create a new SignalR connection
+    connection = new signalR.HubConnectionBuilder()
+        .withUrl(`/chathub?conversationId=${conversationId}`)
+        .build();
 
-    // Clear input
-    messageInput.value = ""
+    // Listen for incoming messages from SignalR
+    connection.on("ReceiveMessage", (senderId, message) => {
+        console.log("📨 New message from:", senderId, ":", message);
+        loadMessagesFromApi(conversationId); // Cập nhật UI
+    });
 
-    // Reload messages and conversations
-    loadMessages()
-    loadConversations()
-
-    // Reselect current conversation
-    setTimeout(() => {
-        const conversationElement = document.querySelector(`[onclick="selectConversation(${currentConversation.id})"]`)
-        if (conversationElement) {
-            conversationElement.classList.add("active")
-        }
-    }, 100)
+    try {
+        // Start the connection
+        await connection.start();
+        console.log("🟢 Connected to SignalR");
+    } catch (err) {
+        console.error("SignalR Error:", err);
+    }
 }
+
+async function sendMessage(event) {
+    event.preventDefault();
+
+    if (!currentConversation) return;
+
+    const messageInput = document.getElementById("messageInput");
+    const messageText = messageInput.value.trim();
+    if (!messageText) return;
+
+    const conversationId = currentConversation.conversationId;
+    const senderId = parseInt(localStorage.getItem("doctorId")); // Có thể đổi sang patientId nếu là bệnh nhân
+    const receiverId = currentConversation.patientUser?.userId || currentConversation.doctorUserId;
+
+    console.log("📥 Sending from:", senderId);
+    console.log("📤 Sending to:", receiverId);
+    console.log("💬 Message:", messageText);
+
+    if (!senderId || !receiverId || !conversationId) {
+        console.error("❌ Missing senderId, receiverId, or conversationId");
+        return;
+    }
+
+    // Bắt đầu kết nối socket nếu chưa có
+    await setupSignalR(conversationId);
+
+    const newMessage = {
+        conversationId: conversationId,
+        senderId: senderId,
+        messageType: "text",
+        content: messageText
+    };
+
+    try {
+        // Gửi message qua API
+        const res = await fetch("/api/APIMessage/send", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newMessage)
+        });
+
+        if (!res.ok) throw new Error("Failed to send message");
+
+        // Gửi qua socket sau khi lưu thành công (nếu muốn)
+        await connection.invoke("SendMessage", conversationId.toString(), senderId.toString(), messageText);
+
+        messageInput.value = "";
+        await loadMessagesFromApi(conversationId);
+
+    } catch (err) {
+        console.error("❌ Error sending message:", err);
+        showNotification("Failed to send message", "danger");
+    }
+}
+
 
 // Action functions
 function startVideoCall() {

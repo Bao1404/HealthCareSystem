@@ -1,6 +1,9 @@
 ﻿// Appointments functionality
 document.addEventListener("DOMContentLoaded", () => {
-    updateUserInfo()
+    // Only run if we're on the appointments page and elements exist
+    if (document.getElementById("userName")) {
+        updateUserInfo()
+    }
     loadAppointments()
     setupAppointmentForm()
 })
@@ -85,6 +88,10 @@ function loadAppointments() {
 
 function loadUpcomingAppointments() {
     const container = document.getElementById("upcomingAppointments")
+    if (!container) {
+        console.log("upcomingAppointments container not found, skipping...")
+        return
+    }
     const upcomingAppts = appointments.filter((apt) => apt.status === "upcoming")
 
     container.innerHTML = upcomingAppts.map((appointment) => createAppointmentCard(appointment)).join("")
@@ -92,6 +99,10 @@ function loadUpcomingAppointments() {
 
 function loadPastAppointments() {
     const container = document.getElementById("pastAppointments")
+    if (!container) {
+        console.log("pastAppointments container not found, skipping...")
+        return
+    }
     const pastAppts = appointments.filter((apt) => apt.status === "completed")
 
     container.innerHTML = pastAppts.map((appointment) => createAppointmentCard(appointment)).join("")
@@ -99,13 +110,13 @@ function loadPastAppointments() {
 
 function loadCancelledAppointments() {
     const container = document.getElementById("cancelledAppointments")
+    if (!container) {
+        console.log("cancelledAppointments container not found, skipping...")
+        return
+    }
     const cancelledAppts = appointments.filter((apt) => apt.status === "cancelled")
 
-    if (cancelledAppts.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted py-4">No cancelled appointments</div>'
-    } else {
-        container.innerHTML = cancelledAppts.map((appointment) => createAppointmentCard(appointment)).join("")
-    }
+    container.innerHTML = cancelledAppts.map((appointment) => createAppointmentCard(appointment)).join("")
 }
 
 function createAppointmentCard(appointment) {
@@ -169,6 +180,12 @@ function setupAppointmentForm() {
     const doctorSelect = document.getElementById("doctor")
     const dateInput = document.getElementById("appointmentDate")
     const timeSelect = document.getElementById("appointmentTime")
+
+    // Check if elements exist (might be in reschedule modal instead)
+    if (!specialtySelect || !doctorSelect || !dateInput || !timeSelect) {
+        console.log("Appointment form elements not found, skipping setup...")
+        return
+    }
 
     // Set minimum date to today
     const today = new Date().toISOString().split("T")[0]
