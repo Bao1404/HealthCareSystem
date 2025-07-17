@@ -51,6 +51,9 @@ namespace Services.Service
         public async Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart) =>
             await _appointmentRepository.GetAppointmentsByWeekAsync(doctorId, weekStart);
 
+        public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart) =>
+            await _appointmentRepository.GetAppointmentsByMonthAsync(doctorId, monthStart);
+
         public async Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId)
         {
             try
