@@ -1,8 +1,8 @@
 ﻿using BusinessObjects;
 
-namespace Services
+namespace Repositories.Interface
 {
-    public interface IPatientService
+    public interface IPatientRepository
     {
         Task CreatePatient(Patient patient);
     }

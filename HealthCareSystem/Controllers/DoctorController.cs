@@ -49,8 +49,17 @@ namespace HealthCareSystem.Controllers
         }
         public IActionResult Messages()
         {
+            var doctorId = HttpContext.Session.GetInt32("UserId");
+
+            if (doctorId == null)
+            {
+                return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
+            }
+
+            ViewData["DoctorId"] = doctorId; // nếu muốn gửi ra View
             ViewData["ActiveMenu"] = "Messages";
             return View();
         }
+
     }
 }

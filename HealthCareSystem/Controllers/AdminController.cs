@@ -28,10 +28,10 @@ namespace HealthCareSystem.Controllers
             return View();
         }
 
-        public IActionResult Reports()
+        public IActionResult Reports()  
         {
             ViewData["ActiveMenu"] = "Reports";
             return View();
         }
     }
-}
+}   

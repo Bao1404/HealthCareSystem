@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
+using Repositories.Interface;
 
-namespace Repositories
+namespace Repositories.Repositories
 {
     public class PatientRepository : IPatientRepository
     {

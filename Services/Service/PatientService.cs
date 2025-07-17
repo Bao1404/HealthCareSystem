@@ -1,7 +1,8 @@
 ﻿using BusinessObjects;
-using Repositories;
+using Repositories.Interface;
+using Services.Interface;
 
-namespace Services
+namespace Services.Service
 {
     public class PatientService : IPatientService
     {

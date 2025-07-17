@@ -1,7 +1,6 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
-using Services;
 using Services.Interface;
 
 namespace HealthCareSystem.Controllers
