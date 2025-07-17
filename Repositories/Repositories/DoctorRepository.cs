@@ -34,10 +34,5 @@ namespace Repositories.Repositories
         {
             return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
         }
-
-        public async Task<Doctor?> GetByIdAsync(int doctorUserId)
-        {
-            return await _context.Doctors.Include(d => d.User).Include(d => d.Specialty).FirstOrDefaultAsync(d => d.UserId == doctorUserId);
-        }
     }
 }

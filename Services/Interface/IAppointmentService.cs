@@ -17,5 +17,16 @@ namespace Services.Interface
         Task<bool> IsTimeSlotBookedAsync(int doctorId, DateTime dateTime);
         Task<bool> IsTimeSlotBookedAsync(int doctorId, DateTime dateTime, int excludeAppointmentId);
         Task<List<Appointment>> GetByDoctorAndDateAsync(int doctorId, DateTime date);
+
+        // Doctor-specific methods
+        Task<List<Appointment>> GetPendingAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetTodayAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetUpcomingAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
+        Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId);
+        Task<bool> RejectAppointmentAsync(int appointmentId, int doctorId, string? reason = null);
+        Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart);
     }
 }

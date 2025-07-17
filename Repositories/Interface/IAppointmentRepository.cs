@@ -17,5 +17,14 @@ namespace Repositories.Interface
         Task<bool> IsTimeSlotBookedAsync(int doctorId, DateTime dateTime);
         Task<bool> IsTimeSlotBookedAsync(int doctorId, DateTime dateTime, int excludeAppointmentId);
         Task<List<Appointment>> GetByDoctorAndDateAsync(int doctorId, DateTime date);
+
+        // Doctor-specific methods
+        Task<List<Appointment>> GetPendingAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetTodayAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetUpcomingAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
+        Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
+        Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart);
     }
 }
