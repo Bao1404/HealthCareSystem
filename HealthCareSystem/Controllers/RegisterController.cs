@@ -2,6 +2,7 @@
 using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using Services.Interface;
 
 namespace HealthCareSystem.Controllers
 {
@@ -68,7 +69,7 @@ namespace HealthCareSystem.Controllers
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     };
-                    
+
                     await _patientService.CreatePatient(user.Patient);
                 }
                 HttpContext.Session.SetInt32("UserId", user.UserId);

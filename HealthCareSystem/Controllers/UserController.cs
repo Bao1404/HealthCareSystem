@@ -1,7 +1,5 @@
-﻿using BusinessObjects;
-using Microsoft.AspNetCore.Mvc;
-using Services;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using Services.Interface;
 
 namespace HealthCareSystem.Controllers
 {

@@ -1,19 +1,15 @@
 ﻿using BusinessObjects;
-using Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Repositories.Interface;
+using Services.Interface;
 
-namespace Services
+namespace Services.Service
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService()
+        public UserService(IUserRepository userRepository)
         {
-            _userRepository = new UserRepository();
+            _userRepository = userRepository;
         }
         public Task<User> GetUserByEmailAndPassword(string email, string password) => _userRepository.GetUserByEmailAndPassword(email, password);
         public Task<User> GetUserById(int userId) => _userRepository.GetUserById(userId);
