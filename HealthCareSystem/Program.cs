@@ -21,7 +21,7 @@ namespace HealthCareSystem
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareDB")));
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
             builder.Services.AddHttpClient();
