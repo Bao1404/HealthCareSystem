@@ -22,7 +22,8 @@
             <div class="user-profile" onclick="window.location.href='profile.html'">
                 <img src="/placeholder.svg?height=32&width=32" alt="User" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="userName">John Doe</h6>
+                    <p id="userId" style="display: none;">@Model.UserId</p>
+                    <h6>@Model.FullName</h6>
                     <p>Patient</p>
                 </div>
             </div>

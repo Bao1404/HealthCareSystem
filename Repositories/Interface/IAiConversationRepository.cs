@@ -11,5 +11,6 @@ namespace Repositories
     {
         Task CreateConversation(Aiconversation conversation);
         Task<Aiconversation> GetConversationByUserId(int userId);
+        Task UpdateConversation(Aiconversation conversation);
     }
 }

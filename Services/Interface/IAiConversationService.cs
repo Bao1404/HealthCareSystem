@@ -11,5 +11,6 @@ namespace Services
     {
         Task<Aiconversation> GetConversationByUserId(int userId);
         Task CreateConversation(Aiconversation conversation);
+        Task UpdateConversation(Aiconversation conversation);
     }
 }

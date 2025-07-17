@@ -1,4 +1,5 @@
 using BusinessObjects;
+using HealthCareSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Repositories.Interface;
@@ -19,15 +20,22 @@ namespace HealthCareSystem
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareDB")));
+
+            builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+            builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+            builder.Services.AddScoped<IAiMessageRepository, AiMessageRepository>();
+            builder.Services.AddScoped<IAiConversationRepository, AiConversationRepository>();
 
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
             builder.Services.AddScoped<IDoctorService, DoctorService>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
-            builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-
+            builder.Services.AddScoped<IAiMessageService, AiMessageService>();
+            builder.Services.AddScoped<IAiConversationService, AiConversationService>();
 
             builder.Services.AddSession();
             var app = builder.Build();

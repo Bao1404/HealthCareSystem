@@ -8,13 +8,15 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-    public class AiConversationService
+    public class AiConversationService : IAiConversationService
     {
         private readonly IAiConversationRepository _repository;
-        public AiConversationService()
+        public AiConversationService(IAiConversationRepository repository)
         {
-            _repository = new AiConversationRepository();
+            _repository = repository;
         }
-        Task CreateConversation(Aiconversation conversation) => _repository.CreateConversation(conversation);
+        public Task CreateConversation(Aiconversation conversation) => _repository.CreateConversation(conversation);
+        public Task<Aiconversation> GetConversationByUserId(int userId) => _repository.GetConversationByUserId(userId);
+        public Task UpdateConversation(Aiconversation conversation) => _repository.UpdateConversation(conversation);
     }
 }

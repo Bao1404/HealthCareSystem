@@ -1,25 +1,26 @@
 ﻿using BusinessObjects;
 using Microsoft.EntityFrameworkCore;
+using Repositories.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Repositories
+namespace Repositories.Repositories
 {
-    public class AiConversationRepository : IAiConversationRepository
+    public class AiMessageRepository : IAiMessageRepository
     {
         private readonly HealthCareSystemContext _context;
-        public AiConversationRepository(HealthCareSystemContext context)
+        public AiMessageRepository(HealthCareSystemContext context)
         {
             _context = context;
         }
-        public async Task CreateConversation(Aiconversation conversation)
+        public async Task CreateMessage(Aimessage msg)
         {
             try
             {
-                await _context.Aiconversations.AddAsync(conversation);
+                _context.Aimessages.Add(msg);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -27,22 +28,22 @@ namespace Repositories
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<Aiconversation> GetConversationByUserId(int userId)
+        public async Task<List<Aimessage>> GetMessagesByUserId(int userId)
         {
             try
             {
-                return await _context.Aiconversations.FirstOrDefaultAsync(c => c.UserId == userId);
+                return await _context.Aimessages.Where(m => m.UserId == userId).OrderBy(m => m.SentAt).ToListAsync();
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-        public async Task UpdateConversation(Aiconversation conversation)
+        public async Task SaveMessage(Aimessage[] msg)
         {
             try
             {
-                _context.Entry<Aiconversation>(conversation).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                _context.Aimessages.AddRange(msg);
                 await _context.SaveChangesAsync();
             }
             catch(Exception ex)
