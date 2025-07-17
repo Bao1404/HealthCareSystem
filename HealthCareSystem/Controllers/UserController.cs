@@ -11,7 +11,6 @@ namespace HealthCareSystem.Controllers
     {
         private readonly IUserService _userService;
         private int? currentUser => HttpContext.Session.GetInt32("UserId");
-        public UserController(IUserService userService)
         private readonly IDoctorService _doctorService;
         private readonly ISpecialtyService _specialtyService;
         private readonly IAppointmentService _appointmentService;

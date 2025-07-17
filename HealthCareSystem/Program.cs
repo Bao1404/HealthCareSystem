@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
 using Repositories.Interface;
 using Repositories.IRepositories;
 using Repositories.Repositories;
