@@ -1,6 +1,5 @@
-﻿using BusinessObjects;
+using BusinessObjects;
 using Repositories.Interface;
-using Services.Interface;
 
 namespace Services.Service
 {
@@ -12,5 +11,6 @@ namespace Services.Service
             _patientRepository = patientRepository;
         }
         public Task CreatePatient(Patient patient) => _patientRepository.CreatePatient(patient);
+        public async Task<Patient?> GetByUserIdAsync(int userId) => await _patientRepository.GetByUserIdAsync(userId);
     }
 }

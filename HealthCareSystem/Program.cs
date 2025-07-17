@@ -31,7 +31,10 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages(); // ✅ Thêm dòng này để tránh lỗi
-
+            builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+            builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
+            builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
             builder.Services.AddSession();
             builder.Services.AddSignalR();
 

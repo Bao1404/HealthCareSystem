@@ -23,42 +23,17 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<Doctor>> SearchDoctorsAsync(string fullName, string phoneNumber, string email, string specialtyName)
+        public async Task<List<Doctor>> GetDoctorsAsync()
         {
-            try
-            {
-                var query = _context.Doctors.Include(d => d.User)
-                                             .Include(d => d.Specialty)
-                                             .AsQueryable();
-
-                if (!string.IsNullOrEmpty(fullName))
-                {
-                    query = query.Where(d => d.User.FullName.Contains(fullName));
-                }
-
-                if (!string.IsNullOrEmpty(phoneNumber))
-                {
-                    query = query.Where(d => d.User.PhoneNumber.Contains(phoneNumber));
-                }
-
-                if (!string.IsNullOrEmpty(email))
-                {
-                    query = query.Where(d => d.User.Email.Contains(email));
-                }
-
-                if (!string.IsNullOrEmpty(specialtyName))
-                {
-                    query = query.Where(d => d.Specialty.Name.Contains(specialtyName));
-                }
-
-                return await query.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            return await _context.Doctors.Include(d => d.User)
+                                         .Include(d => d.Specialty)
+                                         .ToListAsync();
         }
 
+        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId)
+        {
+            return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
+        }
 
     }
 }

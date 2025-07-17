@@ -22,5 +22,10 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<Patient?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Patients.FindAsync(userId);
+        }
+
     }
 }
