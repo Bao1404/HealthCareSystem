@@ -18,13 +18,15 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">3</span>
             </button>
-            <div class="user-profile" onclick="window.location.href='profile.html'">
-                <img src="/placeholder.svg?height=32&width=32" alt="User" class="user-avatar">
-                <div class="user-info">
-                    <h6 id="userName">John Doe</h6>
-                    <p>Patient</p>
+            <a asp-action="Profile" asp-controller="User">
+                <div class="user-profile">
+                    <img src="@(ViewBag.CurrentUser?.AvatarUrl ?? "/images/default-user.png")" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <h6 id="userName">@(ViewBag.CurrentUser?.FullName ?? "User")</h6>
+                        <p>Patient</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 

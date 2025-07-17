@@ -201,6 +201,10 @@ namespace HealthCareSystem.Controllers
         {
             ViewData["ActiveMenu"] = "Calendar";
             var currentUserId = HttpContext.Session.GetInt32("UserId");
+
+            var currentUser = await _userService.GetUserById(currentUserId.Value);
+            ViewBag.CurrentUser = currentUser;
+
             if (currentUserId == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -278,6 +282,16 @@ namespace HealthCareSystem.Controllers
         public async Task<IActionResult> Doctors()
         {
             ViewData["ActiveMenu"] = "Doctors";
+
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+
+            var currentUser = await _userService.GetUserById(currentUserId.Value);
+            ViewBag.CurrentUser = currentUser;
+
+            if (currentUserId == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             var doctors = await _doctorService.GetDoctorsAsync();
             var specialties = await _specialtyService.GetAllSpecialtiesAsync();
 
