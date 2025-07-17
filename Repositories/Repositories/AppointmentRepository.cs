@@ -195,5 +195,23 @@ namespace Repositories.Repositories
                 .OrderBy(a => a.AppointmentDateTime)
                 .ToListAsync();
         }
+
+        public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart)
+        {
+            var monthEnd = monthStart.AddMonths(1);
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId 
+                        && a.AppointmentDateTime >= monthStart 
+                        && a.AppointmentDateTime < monthEnd
+                        && a.Status != "Cancelled")
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
     }
 }

@@ -28,5 +28,6 @@ namespace Services.Interface
         Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId);
         Task<bool> RejectAppointmentAsync(int appointmentId, int doctorId, string? reason = null);
         Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart);
+        Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart);
     }
 }
