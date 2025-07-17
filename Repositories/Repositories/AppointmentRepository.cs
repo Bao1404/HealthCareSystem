@@ -86,5 +86,114 @@ namespace Repositories.Repositories
                                                     && a.Status != "Cancelled")
                                               .ToListAsync();
         }
+
+        // Doctor-specific methods
+        public async Task<List<Appointment>> GetPendingAppointmentsByDoctorAsync(int doctorId)
+        {
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId && a.Status == "Pending")
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetTodayAppointmentsByDoctorAsync(int doctorId)
+        {
+            var today = DateTime.Today;
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId 
+                        && a.AppointmentDateTime.Date == today
+                        && (a.Status == "Confirmed" || a.Status == "Completed"))
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetUpcomingAppointmentsByDoctorAsync(int doctorId)
+        {
+            var today = DateTime.Today;
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId 
+                        && a.AppointmentDateTime.Date > today
+                        && a.Status == "Confirmed")
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId)
+        {
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId && a.Status == "Completed")
+                .OrderByDescending(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId)
+        {
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId && a.Status == "Cancelled")
+                .OrderByDescending(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status)
+        {
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId && a.Status == status)
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart)
+        {
+            var weekEnd = weekStart.AddDays(7);
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId 
+                        && a.AppointmentDateTime >= weekStart 
+                        && a.AppointmentDateTime < weekEnd
+                        && a.Status != "Cancelled")
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
     }
 }
