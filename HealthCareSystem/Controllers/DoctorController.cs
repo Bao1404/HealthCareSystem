@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 using BusinessObjects;
 using HealthCareSystem.Models;
+using System.Threading.Tasks;
 
 namespace HealthCareSystem.Controllers
 {
@@ -9,31 +10,43 @@ namespace HealthCareSystem.Controllers
     {
         private readonly IDoctorService _doctorService;
         private readonly IAppointmentService _appointmentService;
-
-        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService)
+        private readonly IUserService _userService;
+        private int? currentUser => HttpContext.Session.GetInt32("UserId");
+        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService)
         {
             _doctorService = doctorService;
             _appointmentService = appointmentService;
+            _userService = userService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            if(currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
             ViewData["ActiveMenu"] = "Dashboard";
-            return View();
+            return View(user);
         }
         public async Task<IActionResult> Appointments()
         {
             ViewData["ActiveMenu"] = "Appointments";
-            
-            // Get doctor ID from session (you should implement proper authentication)
-            // For demo purposes, assuming doctor ID is stored in session
-            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1; // Default to 1 for testing
 
-            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(doctorId);
-            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
-            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(doctorId);
-            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(doctorId);
-            var cancelledAppointments = await _appointmentService.GetCancelledAppointmentsByDoctorAsync(doctorId);
+            //// Get doctor ID from session (you should implement proper authentication)
+            //// For demo purposes, assuming doctor ID is stored in session
+            //var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1; // Default to 1 for testing
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+
+            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(user.UserId);
+            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(user.UserId);
+            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(user.UserId);
+            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(user.UserId);
+            var cancelledAppointments = await _appointmentService.GetCancelledAppointmentsByDoctorAsync(user.UserId);
 
             ViewBag.PendingAppointments = pendingAppointments;
             ViewBag.TodayAppointments = todayAppointments;
@@ -44,15 +57,27 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Patients()
+        public async Task<IActionResult> Patients()
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+
             ViewData["ActiveMenu"] = "Patients";
-            return View();
+            return View(user);
         }
-        public IActionResult Schedule()
+        public async Task<IActionResult> Schedule()
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+
             ViewData["ActiveMenu"] = "Schedule";
-            return View();
+            return View(user);
         }
         public async Task<IActionResult> ProfileAsync(int id)
         {

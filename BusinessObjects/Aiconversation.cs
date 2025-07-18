@@ -1,12 +1,11 @@
-﻿namespace BusinessObjects;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BusinessObjects;
 
 public partial class Aiconversation
 {
-    public int AiconversationId { get; set; }
-
     public int UserId { get; set; }
-
-    public string? Title { get; set; }
 
     public DateTime? StartedAt { get; set; }
 

@@ -3,12 +3,14 @@ using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Interface;
+using System.Threading.Tasks;
 
 namespace HealthCareSystem.Controllers
 {
     public class UserController : Controller
     {
         private readonly IUserService _userService;
+        private int? currentUser => HttpContext.Session.GetInt32("UserId");
         private readonly IDoctorService _doctorService;
         private readonly ISpecialtyService _specialtyService;
         private readonly IAppointmentService _appointmentService;
@@ -27,7 +29,6 @@ namespace HealthCareSystem.Controllers
         public async Task<IActionResult> Index()
         {
             ViewData["ActiveMenu"] = "Dashboard";
-            var currentUser = HttpContext.Session.GetInt32("UserId");
             if (currentUser == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -330,15 +331,25 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "Messages";
             return View();
         }
-        public IActionResult ChatBox()
+        public async Task<IActionResult> ChatBox()
         {
+            if(currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
             ViewData["ActiveMenu"] = "ChatBox";
-            return View();
+            return View(user);
         }
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             ViewData["ActiveMenu"] = "Profile";
-            return View();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+            return View(user);
         }
 
         // API Methods for AJAX calls

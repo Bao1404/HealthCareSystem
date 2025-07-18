@@ -3,15 +3,15 @@ const aiMessages = []
 let isTyping = false
 
 document.addEventListener("DOMContentLoaded", () => {
+    const userId = document.getElementById("userId").innerText;  // Lấy UserId từ Razor Page
+    if (userId) {
+        getMessages(userId);  // Lấy tin nhắn khi tải trang
+    }
     updateUserInfo()
     loadRecommendedDoctors()
 })
 
-function updateUserInfo() {
-    const userName = localStorage.getItem("userName") || "John Doe"
-    document.getElementById("userName").textContent = userName
-}
-
+// Load recommended doctors (example)
 function loadRecommendedDoctors() {
     const doctors = [
         {
@@ -48,11 +48,12 @@ function loadRecommendedDoctors() {
         <button class="btn btn-sm btn-primary" onclick="bookWithDoctor('${doctor.name}')">Book</button>
       </div>
     </div>
-  `,
+  `
         )
         .join("")
 }
 
+// Gửi tin nhắn (POST request)
 function sendAIMessage(event) {
     event.preventDefault()
 
@@ -61,62 +62,95 @@ function sendAIMessage(event) {
 
     if (!messageText || isTyping) return
 
-    // Add user message
+    // Thêm tin nhắn của người dùng
     addMessage("user", messageText)
 
-    // Clear input
+    // Xóa input
     input.value = ""
 
-    // Show typing indicator
+    // Hiển thị biểu tượng đang gõ
     showTypingIndicator()
 
-    // Simulate AI response after 2-3 seconds
-    setTimeout(
-        () => {
-            hideTypingIndicator()
-            const aiResponse = generateAIResponse(messageText)
-            addMessage("ai", aiResponse)
+    // Gửi tin nhắn đến API (POST request)
+    const userId = document.getElementById("userId").innerText;  // Lấy UserId từ Razor Page
+    console.log("UserId from Razor Page:", userId);
+    fetch("/api/chatbox/message", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
         },
-        Math.random() * 1000 + 2000,
-    )
+        body: JSON.stringify({
+            UserId: userId,  // Thay đổi UserId thực tế từ session hoặc localStorage
+            Message: messageText
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            hideTypingIndicator();
+            addMessage("ai", data.aiReply);  // Hiển thị phản hồi từ AI
+        })
+        .catch(error => {
+            hideTypingIndicator();
+            console.error("Error sending message:", error);
+            addMessage("ai", "Sorry, there was an error. Please try again later.");
+        });
 }
 
+// Thêm tin nhắn vào giao diện
+// Thêm tin nhắn vào giao diện
 function addMessage(sender, text) {
-    const messagesContainer = document.getElementById("aiChatMessages")
-    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const messagesContainer = document.getElementById("aiChatMessages");
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-    const messageElement = document.createElement("div")
-    messageElement.className = `message ${sender === "user" ? "user-message" : "ai-message"}`
+    const messageElement = document.createElement("div");
+    messageElement.className = `message ${sender === "user" ? "user-message" : "ai-message"}`;
+
+    // Format tin nhắn AI trước khi thêm vào giao diện
+    const formattedText = formatMessageText(text);  // Sử dụng hàm formatMessageText cho mọi tin nhắn
 
     messageElement.innerHTML = `
-    <div class="message-avatar">
-      ${sender === "user"
+        <div class="message-avatar">
+            ${sender === "user"
             ? '<img src="/placeholder.svg?height=36&width=36" alt="User">'
-            : '<div class="ai-avatar-small"><i class="fas fa-robot"></i></div>'
-        }
-    </div>
-    <div class="message-content">
-      <div class="message-header">
-        <span class="message-sender">${sender === "user" ? "You" : "AI Assistant"}</span>
-        <span class="message-time">${time}</span>
-      </div>
-      <div class="message-text">${text}</div>
-      ${sender === "ai"
-            ? `
-        <div class="ai-disclaimer">
-          <i class="fas fa-exclamation-triangle"></i>
-          This AI assistant provides general information only and should not replace professional medical advice.
+            : '<div class="ai-avatar-small"><i class="fas fa-robot"></i></div>'}
         </div>
-      `
-            : ""
-        }
-    </div>
-  `
+        <div class="message-content">
+            <div class="message-header">
+                <span class="message-sender">${sender === "user" ? "You" : "AI Assistant"}</span>
+                <span class="message-time">${time}</span>
+            </div>
+            <div class="message-text">${formattedText}</div>
+            ${sender === "ai" ? ` 
+                <div class="ai-disclaimer">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    This AI assistant provides general information only and should not replace professional medical advice.
+                </div>
+            ` : ""}
+        </div>
+    `;
 
-    messagesContainer.appendChild(messageElement)
-    messagesContainer.scrollTop = messagesContainer.scrollHeight
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll đến cuối tin nhắn
 }
 
+// Hàm định dạng tin nhắn và xóa các dấu *
+function formatMessageText(responseText) {
+    if (!responseText) return "";
+
+    // Loại bỏ các dấu * trước các mục và chuyển thành các phần tử danh sách <ul><li>
+    let formattedResponse = responseText.split("\n").map(line => {
+        // Nếu dòng bắt đầu bằng *, chuyển thành <li> item
+        if (line.startsWith("*")) {
+            return `<li>${line.replace("*", "").trim()}</li>`;  // Loại bỏ dấu * và chuyển thành <li>
+        } else {
+            return `<p>${line.trim()}</p>`;  // Các dòng không có dấu * thì tạo thành đoạn văn
+        }
+    }).join(""); // Ghép các phần tử lại với nhau
+
+    return `<ul>${formattedResponse}</ul>`;  // Bao toàn bộ thành danh sách <ul>
+}
+
+// Hiển thị biểu tượng đang gõ
 function showTypingIndicator() {
     if (isTyping) return
 
@@ -147,6 +181,7 @@ function showTypingIndicator() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight
 }
 
+// Ẩn biểu tượng đang gõ
 function hideTypingIndicator() {
     isTyping = false
     const typingElement = document.getElementById("typingIndicator")
@@ -155,6 +190,22 @@ function hideTypingIndicator() {
     }
 }
 
+// Lấy tin nhắn từ API (GET request)
+function getMessages(userId) {
+    fetch(`/api/chatbox/messages/${userId}`)
+        .then((response) => response.json())
+        .then((data) => {
+            data.forEach((message) => {
+                const formattedMessage = formatMessageText(message.content);  // Định dạng tin nhắn từ DB
+                addMessage(message.sender.toLowerCase(), formattedMessage); // Hiển thị tất cả tin nhắn
+            });
+        })
+        .catch((error) => {
+            console.error("Error fetching messages:", error);
+        });
+}
+
+// Khởi tạo trả lời từ AI (Ví dụ cho việc tự động phản hồi)
 function generateAIResponse(userMessage) {
     const responses = {
         flu: "Common flu symptoms include fever, body aches, fatigue, cough, and congestion. Rest, hydration, and over-the-counter medications can help manage symptoms. Consult a doctor if symptoms worsen or persist.",
@@ -189,11 +240,13 @@ function generateAIResponse(userMessage) {
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)]
 }
 
+// Hỏi các câu hỏi nhanh từ giao diện
 function askQuickQuestion(question) {
     document.getElementById("aiMessageInput").value = question
     sendAIMessage({ preventDefault: () => { } })
 }
 
+// Nhận dạng giọng nói
 function startVoiceInput() {
     const webkitSpeechRecognition = window.webkitSpeechRecognition
     if (webkitSpeechRecognition) {

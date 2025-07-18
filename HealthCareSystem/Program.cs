@@ -1,5 +1,7 @@
 ﻿using BusinessObjects;
+using HealthCareSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
 using Repositories.Interface;
 using Repositories.IRepositories;
 using Repositories.Repositories;
@@ -20,6 +22,17 @@ namespace HealthCareSystem
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
+
+            builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IPatientRepository, PatientRepository>();
+            builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+            builder.Services.AddScoped<IAiMessageRepository, AiMessageRepository>();
+            builder.Services.AddScoped<IAiConversationRepository, AiConversationRepository>();
+            builder.Services.AddScoped<IAiConversationService, AiConversationService>();
+            builder.Services.AddScoped<IAiMessageService, AiMessageService>();
 
             // Register repositories and services
             builder.Services.AddScoped<IUserService, UserService>();

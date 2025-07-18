@@ -1,4 +1,7 @@
-﻿namespace BusinessObjects;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BusinessObjects;
 
 public partial class User
 {
@@ -22,7 +25,7 @@ public partial class User
 
     public bool? IsActive { get; set; }
 
-    public virtual ICollection<Aiconversation> Aiconversations { get; set; } = new List<Aiconversation>();
+    public virtual Aiconversation? Aiconversation { get; set; }
 
     public virtual ICollection<Conversation> ConversationDoctorUsers { get; set; } = new List<Conversation>();
 
