@@ -1,5 +1,6 @@
-﻿using BusinessObjects;
+using BusinessObjects;
 using HealthCareSystem.Models;
+using HealthCareSystem.Helper;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Repositories.Interface;
@@ -24,6 +25,9 @@ namespace HealthCareSystem
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
+            builder.Services.Configure<GmailApiOption>(builder.Configuration.GetSection("gmailApi"));
+
+
             builder.Services.AddHttpClient();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -49,6 +53,10 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+
+            builder.Services.AddScoped<GmailHelper>();
+
+
             builder.Services.AddSession();
             builder.Services.AddSignalR();
 

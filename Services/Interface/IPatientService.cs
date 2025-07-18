@@ -6,5 +6,6 @@ namespace Services
     {
         Task CreatePatient(Patient patient);
         Task<Patient?> GetByUserIdAsync(int userId);
+        Task<List<Patient>> GetAllPatientsAsync();
     }
 }

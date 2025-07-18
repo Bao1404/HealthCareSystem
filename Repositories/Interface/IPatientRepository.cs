@@ -8,5 +8,6 @@ namespace Repositories.Interface
 
         Task<Patient?> GetByUserIdAsync(int userId);
 
+        Task<List<Patient>> GetAllPatientsAsync();
     }
 }
