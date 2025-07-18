@@ -7,12 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\static\Call.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Services\Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\static\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\static\Call.html" />
   </ItemGroup>
 
 </Project>

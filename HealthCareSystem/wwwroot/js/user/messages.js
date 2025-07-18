@@ -1,45 +1,97 @@
-﻿// Patient Messages functionality
-let currentConversation = null
-let conversations = []
-
-document.addEventListener("DOMContentLoaded", () => {
-    const userId = localStorage.getItem("patientId")
-    console.log(userId);
-    updateUserInfo()
-    loadConversations()
-
-    setupEventListeners()
-})
+﻿let currentConversation = null;
+let conversations = [];
 let connection = null;
 
+document.addEventListener("DOMContentLoaded", () => {
+    const userId = localStorage.getItem("patientId");
+    console.log("Loaded patientId:", userId);
+    updateUserInfo();
+    loadConversations();
+    setupEventListeners();
+});
 
 async function setupSignalR(conversationId) {
-    if (connection) {
-        // If already connected to SignalR, return early
-        console.log("Already connected to SignalR");
+    conversationId = String(conversationId);
+    if (!conversationId || typeof conversationId !== 'string' || conversationId.trim() === '') {
+        console.error("conversationId không hợp lệ:", conversationId);
+        showNotification("Không thể kết nối: ID cuộc trò chuyện không hợp lệ", "danger");
         return;
     }
 
-    // Create a new SignalR connection
-    connection = new signalR.HubConnectionBuilder()
-        .withUrl(`/chathub?conversationId=${conversationId}`)
-        .build();
+    conversationId = conversationId.trim();
+    if (!connection) {
+        connection = new signalR.HubConnectionBuilder()
+            .withUrl(`/chathub?conversationId=${encodeURIComponent(conversationId)}`)
+            .withAutomaticReconnect()
+            .build();
 
-    // Listen for incoming messages from SignalR
-    connection.on("ReceiveMessage", (senderId, message) => {
-        console.log("📨 New message from:", senderId, ":", message);
-        loadMessagesFromApi(conversationId); // Cập nhật UI
-    });
+        connection.on("ReceiveMessage", (senderId, message) => {
+            console.log("📨 Tin nhắn mới nhận được:", senderId, "Tin nhắn:", message);
+            loadMessagesFromApi(conversationId);
+        });
 
-    try {
-        // Start the connection
-        await connection.start();
-        console.log("🟢 Connected to SignalR");
-    } catch (err) {
-        console.error("SignalR Error:", err);
+        connection.on("ReceiveCall", (senderId, message) => {
+            console.log("📞 Cuộc gọi đến từ:", senderId, "Tin nhắn:", message, "ConversationId:", conversationId);
+
+            // Lấy doctorName từ conversations
+            const conversation = conversations.find(c => String(c.conversationId) === conversationId);
+            const doctorName = conversation?.doctorUser?.fullName || "Bác sĩ không xác định";
+
+            // Hiển thị thông báo
+            showNotification(`Cuộc gọi đến từ ${senderId} (${doctorName}): ${message}`, "info");
+
+            // Hỏi người dùng có muốn tham gia không
+            if (confirm(`Bạn có cuộc gọi đến từ ${senderId} (${doctorName}). Bạn muốn tham gia không?`)) {
+                // Lưu các biến vào localStorage
+                localStorage.setItem("conversationId", conversationId);
+                localStorage.setItem("senderId", senderId);
+                localStorage.setItem("doctorName", doctorName);
+
+                // Chuyển hướng đến trang Call.html
+                window.location.href = `/static/Call2.html?conversationId=${conversationId}`;
+            }
+        });
+
+        connection.onclose((error) => {
+            console.error("Kết nối SignalR bị đóng:", error);
+            showNotification("Kết nối SignalR bị đóng bất ngờ", "danger");
+        });
+
+        try {
+            console.log("Bắt đầu kết nối SignalR...");
+            await connection.start();
+            console.log("🟢 Đã kết nối SignalR, trạng thái:", connection.state);
+        } catch (err) {
+            console.error("Lỗi kết nối SignalR:", err);
+            showNotification("Kết nối SignalR thất bại: " + err.message, "danger");
+            return;
+        }
+    }
+
+    if (connection.state === signalR.HubConnectionState.Connected) {
+        await connection.invoke("JoinGroup", conversationId);
+        console.log(`Đã tham gia nhóm cho conversationId: ${conversationId}`);
+    } else {
+        console.error("Kết nối SignalR không ở trạng thái Connected:", connection.state);
+        
     }
 }
+function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = "top: 20px; right: 20px; z-index: 9999; min-width: 300px;";
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
 
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 10000);
+}
 function updateUserInfo() {
     const userName = localStorage.getItem("userName") || "Patient User"
     document.getElementById("userName").textContent = userName
@@ -149,6 +201,8 @@ function showChatInterface() {
     const emptyChat = document.querySelector(".empty-chat")
     if (emptyChat) emptyChat.style.display = "none"
 }
+
+
 
 async function sendMessage(event) {
     event.preventDefault();
