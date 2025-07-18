@@ -1,6 +1,7 @@
 using HealthCareSystem.Models;
 using HealthCareSystem.Repositories;
 using HealthCareSystem.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthCareSystem
@@ -16,7 +17,14 @@ namespace HealthCareSystem
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareDb")));
-
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.LoginPath = "/Login/Index";
+                options.AccessDeniedPath = "/Home/AccessDenied";
+            });
             builder.Services.AddScoped<IUserService,UserRepository>();
             builder.Services.AddScoped<IPatientService, PatientRepository>();
             builder.Services.AddScoped<IDoctorService, DoctorRepository>();

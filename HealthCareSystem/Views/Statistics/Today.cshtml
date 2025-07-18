@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Today's Statistics";
+    var hourlyLabels = ViewBag.HourlyLabels;
+    var hourlyCounts = ViewBag.HourlyCounts;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-4">
+    <h1 class="mb-4">📊 Today's Appointment Statistics</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Appointments by Hour (Bar Chart)</h4>
+            <canvas id="hourlyChart"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h4>Appointments by Hour (Pie Chart)</h4>
+            <canvas id="hourlyLineChart" width="250" height="250" style="max-width:100%;"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const hourlyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(hourlyLabels));
+    const hourlyCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(hourlyCounts));
+
+    const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+    const hourlyChart = new Chart(hourlyCtx, {
+        type: 'bar',
+        data: {
+            labels: hourlyLabels,
+            datasets: [{
+                label: 'Number of Appointments',
+                data: hourlyCounts,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    const hourlyLineCtx = document.getElementById('hourlyLineChart').getContext('2d');
+    const hourlyLineChart = new Chart(hourlyLineCtx, {
+        type: 'pie',
+        data: {
+            labels: hourlyLabels,
+            datasets: [{
+                label: 'Appointment Distribution by Hour',
+                data: hourlyCounts,
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40', '#E7E9ED', '#8BC34A',
+                    '#00BCD4', '#FFC107', '#795548', '#607D8B'
+                ].slice(0, hourlyLabels.length)
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>

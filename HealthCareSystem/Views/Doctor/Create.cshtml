@@ -1,0 +1,68 @@
+﻿@model HealthCareSystem.ViewModels.DoctorViewModel
+
+@{
+    ViewData["Title"] = "Add New Doctor";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">➕ Add New Doctor</h1>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Email" class="control-label">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="FullName" class="control-label">Full Name</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="PhoneNumber" class="control-label">Phone Number</label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Password" class="control-label">Password</label>
+                <input asp-for="Password" type="password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SpecialtyId" class="control-label">Specialty</label>
+            <select asp-for="SpecialtyId" class="form-select" required>
+                <option value="">-- Select Specialty --</option>
+                @foreach (var item in ViewBag.Specialties)
+                {
+                    <option value="@item.SpecialtyId">@item.Name</option>
+                }
+            </select>
+            <span asp-validation-for="SpecialtyId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Qualifications" class="control-label">Qualifications</label>
+            <input asp-for="Qualifications" class="form-control" />
+            <span asp-validation-for="Qualifications" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Experience" class="control-label">Experience</label>
+            <textarea asp-for="Experience" class="form-control"></textarea>
+            <span asp-validation-for="Experience" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Bio" class="control-label">Bio</label>
+            <textarea asp-for="Bio" class="form-control"></textarea>
+            <span asp-validation-for="Bio" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

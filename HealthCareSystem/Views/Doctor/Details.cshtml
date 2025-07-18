@@ -1,0 +1,25 @@
+﻿@model HealthCareSystem.ViewModels.DoctorViewModel
+
+@{
+    ViewData["Title"] = "Doctor Details";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">👨‍⚕️ Doctor Details</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <h4>@Model.FullName</h4>
+            <p><strong>Email:</strong> @Model.Email</p>
+            <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+            <p><strong>Specialty:</strong> @ViewBag.SpecialtyName</p>
+            <p><strong>Qualifications:</strong> @Model.Qualifications</p>
+            <p><strong>Experience:</strong> @Model.Experience</p>
+            <p><strong>Bio:</strong> @Model.Bio</p>
+            <p><strong>Rating:</strong> @Model.Rating</p>
+        </div>
+    </div>
+
+    <a asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning mt-3">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Back</a>
+</div>

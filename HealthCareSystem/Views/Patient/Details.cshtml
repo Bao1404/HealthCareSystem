@@ -1,0 +1,43 @@
+﻿@model HealthCareSystem.ViewModels.PatientViewModel
+
+@{
+    ViewData["Title"] = "Patient Details";
+}
+
+<h1>Patient Details</h1>
+
+<div>
+    <h4>@Model.FullName</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Email)</dd>
+        <dt class="col-sm-2">Full Name</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.FullName)</dd>
+        <dt class="col-sm-2">Phone Number</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.PhoneNumber)</dd>
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Address)</dd>
+        <dt class="col-sm-2">Date of Birth</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.DateOfBirth)</dd>
+        <dt class="col-sm-2">Gender</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Gender)</dd>
+        <dt class="col-sm-2">Blood Type</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.BloodType)</dd>
+        <dt class="col-sm-2">Allergies</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Allergies)</dd>
+        <dt class="col-sm-2">Weight</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Weight) kg</dd>
+        <dt class="col-sm-2">Height</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Height) cm</dd>
+        <dt class="col-sm-2">BMI</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Bmi)</dd>
+        <dt class="col-sm-2">Emergency Phone Number</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.EmergencyPhoneNumber)</dd>
+    </dl>
+</div>
+<div>
+    <aplicity>
+        asp-action="Edit" asp-route-id="@Model.UserId" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

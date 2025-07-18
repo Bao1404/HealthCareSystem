@@ -1,0 +1,24 @@
+﻿@model HealthCareSystem.ViewModels.DoctorViewModel
+
+@{
+    ViewData["Title"] = "Delete Doctor";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Delete Doctor</h1>
+
+    <h3>Are you sure you want to delete this doctor?</h3>
+    <div class="card">
+        <div class="card-body">
+            <h4>@Model.FullName</h4>
+            <p><strong>Email:</strong> @Model.Email</p>
+            <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+        </div>
+    </div>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="UserId" />
+        <button type="submit" class="btn btn-danger mt-3">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary mt-3">Cancel</a>
+    </form>
+</div>

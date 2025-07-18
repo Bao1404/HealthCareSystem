@@ -1,0 +1,49 @@
+﻿@model IEnumerable<HealthCareSystem.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Manage Doctors";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">👨‍⚕️ Doctor List</h1>
+
+    <div class="alert alert-info">
+        <strong>👥 Number of patients seen today:</strong> @ViewBag.TodayCount
+    </div>
+
+    <a asp-action="Create" class="btn btn-primary mb-3">
+        ➕ Add New Doctor
+    </a>
+
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Specialty</th>
+                <th>Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doctor in Model)
+            {
+                <tr>
+                    <td>@doctor.UserId</td>
+                    <td>@doctor.User?.FullName</td>
+                    <td>@doctor.User?.Email</td>
+                    <td>@doctor.User?.PhoneNumber</td>
+                    <td>@doctor.Specialty?.Name</td>
+                    <td>@doctor.Rating</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@doctor.UserId" class="btn btn-sm btn-info">🔍 View</a>
+                        <a asp-action="Edit" asp-route-id="@doctor.UserId" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@doctor.UserId" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

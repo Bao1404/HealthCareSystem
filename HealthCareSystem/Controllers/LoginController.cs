@@ -1,6 +1,8 @@
 ﻿using HealthCareSystem.Services;
 using HealthCareSystem.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HealthCareSystem.Controllers
 {
@@ -33,23 +35,33 @@ namespace HealthCareSystem.Controllers
 
             if (!ModelState.IsValid)
             {
+                auModel.Login = model;
                 return View("Index", auModel);
             }
 
             var account = _userService.GetUserByAccount(model.Username, model.Password);
             if (account != null)
             {
+                // Tạo claim cho người dùng
+                var claims = new[]
+                {
+            new Claim(ClaimTypes.Name, account.FullName),
+            new Claim(ClaimTypes.NameIdentifier, account.UserId.ToString()),
+            // Thêm claim cho role nếu cần
+             new Claim(ClaimTypes.Role, account.Role)
+        };
+
+                var identity = new ClaimsIdentity(claims, "Login");
+                var principal = new ClaimsPrincipal(identity);
+
+                // Đăng nhập
+                HttpContext.SignInAsync(principal).Wait();
+
+                // Lưu thông tin người dùng vào session
                 HttpContext.Session.SetObject("userId", account.UserId);
                 HttpContext.Session.SetObject("userName", account.FullName);
+
                 return RedirectToAction("Index", "Home");
-                //if (account.RoleId == 1)
-                //{
-                //    return RedirectToAction("Admin", "Admin");
-                //}
-                //else
-                //{
-                //    return RedirectToAction("Index", "Home");
-                //}
             }
             else
             {
@@ -57,6 +69,12 @@ namespace HealthCareSystem.Controllers
                 auModel.Login = model;
                 return View("Index", auModel);
             }
+        }
+        public IActionResult Logout()
+        {
+            HttpContext.SignOutAsync().Wait();
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Home");
         }
     }
 }
