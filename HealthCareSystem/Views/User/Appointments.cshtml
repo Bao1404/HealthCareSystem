@@ -28,15 +28,15 @@
             <input type="text" class="search-input" placeholder="Search appointments..." id="searchInput">
         </div>
         <div class="header-actions">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookAppointmentModal">
-                <i class="fas fa-plus"></i>
+            <button style="height: 55px !important;" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookAppointmentModal">
+                <i class="fas fa-plus" style="margin-top: 17px !important;"></i>
                 Book Appointment
             </button>
             <button class="notification-btn">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">3</span>
             </button>
-            <a asp-action="Profile" asp-controller="User">
+            <a asp-action="Profile" asp-controller="User" style="text-decoration: none;">
                 <div class="user-profile">
                     <img src="@(ViewBag.CurrentUser?.AvatarUrl ?? "/images/default-user.png")" alt="User" class="user-avatar">
                     <div class="user-info">

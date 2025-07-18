@@ -341,10 +341,15 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "ChatBox";
             return View(user);
         }
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             ViewData["ActiveMenu"] = "Profile";
-            return View();
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+            return View(user);
         }
 
         // API Methods for AJAX calls

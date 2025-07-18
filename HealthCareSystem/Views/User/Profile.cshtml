@@ -19,13 +19,15 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">3</span>
             </button>
-            <div class="user-profile">
-                <img src="/placeholder.svg?height=32&width=32" alt="User" class="user-avatar">
-                <div class="user-info">
-                    <h6 id="userName">John Doe</h6>
-                    <p>Patient</p>
+            <a asp-controller="User" asp-action="Profile" style="text-decoration: none;">
+                <div class="user-profile">
+                    <img src="@Model.AvatarUrl" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <h6 id="">@Model.FullName</h6>
+                        <p>Patient</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 
@@ -44,15 +46,15 @@
                     <div class="profile-info">
                         <div class="profile-avatar-section">
                             <div class="profile-avatar-container">
-                                <img src="/placeholder.svg?height=120&width=120" alt="Profile" class="profile-avatar-xl">
+                                <img src="@Model.AvatarUrl" alt="Profile" class="profile-avatar-xl">
                                 <button class="avatar-edit-btn" onclick="changeAvatar()">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
                             <div class="profile-basic-info">
-                                <h4 id="profileName">John Doe</h4>
-                                <p id="profileEmail">john.doe@email.com</p>
-                                <p id="profilePhone">+1 (555) 123-4567</p>
+                                <h4 id="profileName">@Model.FullName</h4>
+                                <p id="profileEmail">@Model.Email</p>
+                                <p id="profilePhone">@Model.PhoneNumber</p>
                                 <div class="profile-badges">
                                     <span class="profile-badge verified">
                                         <i class="fas fa-check-circle"></i> Verified
