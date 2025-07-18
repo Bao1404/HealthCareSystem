@@ -23,5 +23,17 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<List<Doctor>> GetDoctorsAsync()
+        {
+            return await _context.Doctors.Include(d => d.User)
+                                         .Include(d => d.Specialty)
+                                         .ToListAsync();
+        }
+
+        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId)
+        {
+            return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
+        }
+
     }
 }
