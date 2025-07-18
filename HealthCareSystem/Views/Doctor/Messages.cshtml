@@ -55,16 +55,22 @@
                             <img src="/placeholder.svg?height=48&width=48" alt="Patient" class="chat-avatar" id="chatAvatar">
                             <div class="chat-doctor-details">
                                 <h6 id="chatPatientName">John Doe</h6>
-                                <p id="chatPatientInfxo">Age 45 • Hypertension</p>
+                                <p id="chatPatientInfo">Age 45 • Hypertension</p>
                             </div>
                         </div>
                         <div class="chat-actions">
-                            
+                            <button class="chat-action-btn" onclick="startVideoCall()" title="Video Call">
+                                <i class="fas fa-video"></i>
+                            </button>
                             <button class="chat-action-btn" onclick="startVoiceCall()" title="Voice Call">
                                 <i class="fas fa-phone"></i>
                             </button>
-                           
-                          
+                            <button class="chat-action-btn" onclick="viewPatientProfile()" title="View Profile">
+                                <i class="fas fa-user"></i>
+                            </button>
+                            <button class="chat-action-btn" onclick="scheduleAppointment()" title="Schedule Appointment">
+                                <i class="fas fa-calendar-plus"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -102,7 +108,8 @@
     const doctorId = @ViewData["DoctorId"];
     localStorage.setItem("doctorId", doctorId);
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+
 
 
 <script src="~/js/doctor/messages.js"></script>

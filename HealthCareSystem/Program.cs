@@ -8,7 +8,7 @@ using Repositories.Repositories;
 using Services;
 using Services.Interface;
 using Services.Service;
-using Services;
+
 namespace HealthCareSystem
 {
     public class Program
@@ -51,17 +51,7 @@ namespace HealthCareSystem
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
             builder.Services.AddSession();
             builder.Services.AddSignalR();
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                });
-            });
 
-            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -78,7 +68,7 @@ namespace HealthCareSystem
 
             app.UseAuthorization();
             app.UseSession();
-            app.UseCors("AllowAll");
+
             // Map endpoints (must be after UseRouting)
             app.UseEndpoints(endpoints =>
             {
@@ -89,7 +79,6 @@ namespace HealthCareSystem
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-
 
             app.Run();
         }

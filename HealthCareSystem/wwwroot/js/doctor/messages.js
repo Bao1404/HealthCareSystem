@@ -217,8 +217,6 @@ function selectConversation(conversationId) {
     console.log("🟢 Setup SignalR for conversationId:", conversationId);
     // 🟢 Gọi API lấy message
     loadMessagesFromApi(conversationId);
-    console.log(currentConversation.conversationId);
-
 }
 
 
@@ -348,107 +346,36 @@ function filterConversations(searchTerm) {
         }
     })
 }
+
 let connection = null;
 
 async function setupSignalR(conversationId) {
-    conversationId = String(conversationId);
-    if (!conversationId || typeof conversationId !== 'string' || conversationId.trim() === '') {
-        console.error("conversationId không hợp lệ:", conversationId);
-        showNotification("Không thể kết nối: ID cuộc trò chuyện không hợp lệ", "danger");
-        return;
-    }
-
-    conversationId = conversationId.trim();
     if (connection) {
-        console.log("Đã kết nối SignalR");
+        // If already connected to SignalR, return early
+        console.log("Already connected to SignalR");
         return;
     }
 
+    // Create a new SignalR connection
     connection = new signalR.HubConnectionBuilder()
-        .withUrl(`/chathub?conversationId=${encodeURIComponent(conversationId)}`)
-        .withAutomaticReconnect() // Tự động thử lại kết nối
+        .withUrl(`/chathub?conversationId=${conversationId}`)
         .build();
 
+    // Listen for incoming messages from SignalR
     connection.on("ReceiveMessage", (senderId, message) => {
-        console.log("📨 Tin nhắn mới nhận được:", senderId, "Tin nhắn:", message);
-        loadMessagesFromApi(conversationId);
-    });
-
-    connection.on("ReceiveCall", (senderId, message) => {
-      
-            window.location.href = `/static/Call.html`;
-        
-    });
-
-    connection.onclose((error) => {
-        console.error("Kết nối SignalR bị đóng:", error);
-        showNotification("Kết nối SignalR bị đóng bất ngờ", "danger");
+        console.log("📨 New message from:", senderId, ":", message);
+        loadMessagesFromApi(conversationId); // Cập nhật UI
     });
 
     try {
-        console.log("Bắt đầu kết nối SignalR cho conversationId:", conversationId);
+        // Start the connection
         await connection.start();
-        console.log("🟢 Đã kết nối SignalR, trạng thái:", connection.state);
-
-        if (connection.state === signalR.HubConnectionState.Connected) {
-            await connection.invoke("JoinGroup", conversationId);
-            console.log(`Đã tham gia nhóm cho conversationId: ${conversationId}`);
-        } else {
-            console.error("Kết nối SignalR không ở trạng thái Connected:", connection.state);
-            showNotification("Kết nối SignalR chưa được thiết lập", "danger");
-        }
+        console.log("🟢 Connected to SignalR");
     } catch (err) {
-        console.error("Lỗi kết nối SignalR:", err);
-        showNotification("Kết nối SignalR thất bại: " + err.message, "danger");
+        console.error("SignalR Error:", err);
     }
 }
-async function startVoiceCall() {
-    if (!currentConversation) {
-        console.error("currentConversation là null hoặc undefined");
-        showNotification("Không thể bắt đầu cuộc gọi: Không có cuộc trò chuyện nào", "danger");
-        return;
-    }
 
-    const conversationId = String(currentConversation.conversationId); // Ép kiểu thành chuỗi
-    const doctorName = currentConversation.doctorUser?.fullName || "Unknown Doctor";
-
-    console.log("conversationId:", conversationId, "Kiểu:", typeof conversationId); // Log giá trị
-    if (!conversationId || conversationId.trim() === '') {
-        console.error("conversationId không hợp lệ:", conversationId);
-        showNotification("Không thể bắt đầu cuộc gọi: Thiếu ID cuộc trò chuyện", "danger");
-        return;
-    }
-
-    const doctorId = localStorage.getItem("doctorId");
-    console.log("doctorId:", doctorId, "Kiểu:", typeof doctorId); // Log giá trị
-    if (!doctorId || doctorId.trim() === '') {
-        console.error("doctorId không hợp lệ trong localStorage");
-        showNotification("Không thể bắt đầu cuộc gọi: Thiếu ID bác sĩ", "danger");
-        return;
-    }
-
-    if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
-        console.error("Kết nối SignalR chưa được thiết lập");
-        showNotification("Không thể bắt đầu cuộc gọi: Kết nối SignalR chưa được thiết lập", "danger");
-        return;
-    }
-
-    try {
-        console.log("Sending SignalR StartCall message...");
-        await connection.invoke("StartCall", conversationId, doctorId, "Call started from " + doctorName);
-        console.log("📡 Signal sent to patients in conversationId:", conversationId);
-
-        localStorage.setItem("conversationId", conversationId);
-        localStorage.setItem("doctorName", doctorName);
-        localStorage.setItem("doctorId", doctorId);
-
-        window.location.href = `/static/Call.html`;
-        showNotification("Cuộc gọi thoại đã bắt đầu", "info");
-    } catch (err) {
-        console.error("Failed to send SignalR message:", err);
-        showNotification("Không thể bắt đầu cuộc gọi", "danger");
-    }
-}
 async function sendMessage(event) {
     event.preventDefault();
 
@@ -514,7 +441,12 @@ function startVideoCall() {
     showNotification("Video call started", "info")
 }
 
-
+function startVoiceCall() {
+    if (!currentConversation) return
+    console.log("Starting voice call with:", currentConversation.patientName)
+    // Implement voice call functionality
+    showNotification("Voice call started", "info")
+}
 
 function viewPatientProfile() {
     if (!currentConversation) return
