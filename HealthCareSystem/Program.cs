@@ -21,7 +21,7 @@ namespace HealthCareSystem
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddDbContext<HealthCareSystemContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareDB")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
             builder.Services.AddHttpClient();
@@ -31,6 +31,8 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
             builder.Services.AddScoped<IAiMessageRepository, AiMessageRepository>();
             builder.Services.AddScoped<IAiConversationRepository, AiConversationRepository>();
+            builder.Services.AddScoped<IAiConversationService, AiConversationService>();
+            builder.Services.AddScoped<IAiMessageService, AiMessageService>();
 
             // Register repositories and services
             builder.Services.AddScoped<IUserService, UserService>();

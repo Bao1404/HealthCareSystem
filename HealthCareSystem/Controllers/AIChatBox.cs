@@ -1,5 +1,6 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.DTO;
+using HealthCareSystem.Mapper;
 using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +20,18 @@ namespace HealthCareSystem.Controllers
     {
         private readonly IAiConversationService _aiConversationService;
         private readonly IAiMessageService _aiMessageService;
+        private readonly IDoctorService _doctorService;
+        private readonly ISpecialtyService _specialtyService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly OpenAIOptions _option;
-        public AIChatBox(IAiConversationService aiConversationService, IAiMessageService aiMessageService, IOptions<OpenAIOptions> option, IHttpClientFactory httpClientFactory)
+        public AIChatBox(IAiConversationService aiConversationService, IAiMessageService aiMessageService, IOptions<OpenAIOptions> option, IHttpClientFactory httpClientFactory, IDoctorService doctorService, ISpecialtyService specialtyService)
         {
             _aiConversationService = aiConversationService;
             _aiMessageService = aiMessageService;
             _option = option.Value;
             _httpClientFactory = httpClientFactory;
+            _doctorService = doctorService;
+            _specialtyService = specialtyService;
         }
         [HttpPost("message")]
         public async Task<IActionResult> SendMessage([FromBody] AiChatRequest request)
@@ -64,31 +69,23 @@ namespace HealthCareSystem.Controllers
 
             parts.Add(new { text = request.Message });
 
-            var payload = new
-            {
-                contents = new[] { new { parts = parts } }
-            };
-
-            // Create client from IHttpClientFactory
+            var payload = new { contents = new[] { new { parts } } };
             var client = _httpClientFactory.CreateClient();
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var url = $"{_option.Endpoint}?key={_option.ApiKey}";
+            var resp = await client.PostAsync(url, content);
+            resp.EnsureSuccessStatusCode();  // Ensure the response is successful
 
-            var geminiEndpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_option.ApiKey}";
-
-            // Send request to Gemini API
-            var response = await client.PostAsync(geminiEndpoint, content);
-            response.EnsureSuccessStatusCode();  // Ensure the response is successful
-
-            var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
+            using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
 
             // Parse the response from Gemini API
             var aiReply = doc.RootElement
-                .GetProperty("candidates")[0]
-                .GetProperty("content")
-                .GetProperty("parts")[0]
-                .GetProperty("text")
-                .GetString() ?? "";
+                                         .GetProperty("candidates")[0]
+                                         .GetProperty("content")
+                                         .GetProperty("parts")[0]
+                                         .GetProperty("text")
+                                         .GetString()
+                                     ?? "Xin lỗi, tôi không hiểu câu hỏi.";
 
             // Save messages to database
             var now = DateTime.Now;
@@ -116,7 +113,22 @@ namespace HealthCareSystem.Controllers
             conversation.UpdatedAt = now;
             await _aiConversationService.UpdateConversation(conversation);
 
-            return Ok(new { aiReply });
+            var specialty = SpecialtyMapper.GetSpecialty(request.Message);
+            var getSpecialty = await _specialtyService.GetSpecialtyByName(specialty);
+            var docs = await _doctorService.GetBySpecialtyAsync(getSpecialty.SpecialtyId);
+            var recommendedDoctors = docs.Select(d => new {
+                d.UserId,
+                d.User.FullName,
+                Specialty = d.Specialty.Name,
+                AvatarUrl = d.User.AvatarUrl,
+                d.Rating
+            });
+
+            return Ok(new
+            {
+                aiReply,
+                recommendedDoctors
+            });
         }
 
         [HttpGet("messages/{userId}")]

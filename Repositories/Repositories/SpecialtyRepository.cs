@@ -15,5 +15,16 @@ namespace Repositories.Repositories
         {
             return await _context.Specialties.ToListAsync();
         }
+        public async Task<Specialty> GetSpecialtyByName(string name)
+        {
+            try
+            {
+                return await _context.Specialties.FirstOrDefaultAsync(s => s.Name.Equals(name));
+            }
+            catch(Exception ex)
+            {
+                throw new Exception($"Error retrieving specialty by name: {name}", ex);
+            }
+        }
     }
 }
