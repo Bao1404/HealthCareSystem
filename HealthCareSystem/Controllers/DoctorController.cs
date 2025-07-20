@@ -1,7 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using Services.Interface;
 using BusinessObjects;
+using HealthCareSystem.Helper;
 using HealthCareSystem.Models;
+using HealthCareSystem.Service;
+using Microsoft.AspNetCore.Mvc;
+using Services;
+using Services.Interface;
+using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace HealthCareSystem.Controllers
 {
@@ -9,31 +14,49 @@ namespace HealthCareSystem.Controllers
     {
         private readonly IDoctorService _doctorService;
         private readonly IAppointmentService _appointmentService;
-
-        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService)
+        private readonly IUserService _userService;
+        private readonly IPatientService _patientService;
+        private readonly GmailHelper _gmailHelper;
+        private readonly PhotoService _photoService;
+        private int? currentUser => HttpContext.Session.GetInt32("UserId");
+        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService)
         {
             _doctorService = doctorService;
             _appointmentService = appointmentService;
+            _userService = userService;
+            _patientService = patientService;
+            _gmailHelper = gmailHelper;
+            _photoService = photoService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             ViewData["ActiveMenu"] = "Dashboard";
-            return View();
+            return View(doctor);
         }
         public async Task<IActionResult> Appointments()
         {
             ViewData["ActiveMenu"] = "Appointments";
-            
-            // Get doctor ID from session (you should implement proper authentication)
-            // For demo purposes, assuming doctor ID is stored in session
-            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1; // Default to 1 for testing
 
-            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(doctorId);
-            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
-            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(doctorId);
-            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(doctorId);
-            var cancelledAppointments = await _appointmentService.GetCancelledAppointmentsByDoctorAsync(doctorId);
+            //// Get doctor ID from session (you should implement proper authentication)
+            //// For demo purposes, assuming doctor ID is stored in session
+            //var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1; // Default to 1 for testing
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+
+            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(user.UserId);
+            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(user.UserId);
+            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(user.UserId);
+            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(user.UserId);
+            var cancelledAppointments = await _appointmentService.GetCancelledAppointmentsByDoctorAsync(user.UserId);
 
             ViewBag.PendingAppointments = pendingAppointments;
             ViewBag.TodayAppointments = todayAppointments;
@@ -44,15 +67,35 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Patients()
+        public async Task<IActionResult> Patients()
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
+            var patients = await _patientService.GetAllPatientsAsync();
+
+            var model = new DoctorAndPatientViewModel
+            {
+                Doctor = doctor,
+                Patients = patients
+            };
+
+
             ViewData["ActiveMenu"] = "Patients";
-            return View();
+            return View(model);
         }
-        public IActionResult Schedule()
+        public async Task<IActionResult> Schedule()
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var user = await _userService.GetUserById(currentUser.Value);
+
             ViewData["ActiveMenu"] = "Schedule";
-            return View();
+            return View(user);
         }
         public async Task<IActionResult> ProfileAsync(int id)
         {
@@ -67,14 +110,14 @@ namespace HealthCareSystem.Controllers
         public async Task<IActionResult> Calendar(int? year, int? month)
         {
             ViewData["ActiveMenu"] = "Calendar";
-            
+
             var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
-            var currentDate = year.HasValue && month.HasValue 
-                ? new DateTime(year.Value, month.Value, 1) 
+            var currentDate = year.HasValue && month.HasValue
+                ? new DateTime(year.Value, month.Value, 1)
                 : new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
             var calendarViewModel = await BuildCalendarViewModelAsync(doctorId, currentDate);
-            
+
             return View(calendarViewModel);
         }
         public IActionResult Messages()
@@ -88,7 +131,7 @@ namespace HealthCareSystem.Controllers
         {
             var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
             var result = await _appointmentService.ApproveAppointmentAsync(appointmentId, doctorId);
-            
+
             if (result)
             {
                 TempData["SuccessMessage"] = "Appointment approved successfully!";
@@ -106,7 +149,7 @@ namespace HealthCareSystem.Controllers
         {
             var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
             var result = await _appointmentService.RejectAppointmentAsync(appointmentId, doctorId, reason);
-            
+
             if (result)
             {
                 TempData["SuccessMessage"] = "Appointment rejected successfully!";
@@ -143,7 +186,7 @@ namespace HealthCareSystem.Controllers
             {
                 var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
                 var appointment = await _appointmentService.GetAppointmentsByIdAsync(appointmentId);
-                
+
                 if (appointment == null)
                 {
                     TempData["ErrorMessage"] = "Appointment not found.";
@@ -167,9 +210,9 @@ namespace HealthCareSystem.Controllers
                 // Update appointment status
                 appointment.Status = "Completed";
                 appointment.UpdatedAt = DateTime.Now;
-                
+
                 await _appointmentService.UpdateAppointmentAsync(appointment);
-                
+
                 TempData["SuccessMessage"] = "Appointment completed successfully!";
             }
             catch (Exception ex)
@@ -177,7 +220,7 @@ namespace HealthCareSystem.Controllers
                 // Log the exception if you have logging configured
                 TempData["ErrorMessage"] = "An error occurred while completing the appointment.";
             }
-            
+
             return RedirectToAction("Appointments");
         }
 
@@ -188,15 +231,15 @@ namespace HealthCareSystem.Controllers
             {
                 var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
                 var appointment = await _appointmentService.GetAppointmentsByIdAsync(appointmentId);
-                
+
                 if (appointment == null || appointment.DoctorUserId != doctorId)
                 {
                     return Json(new { success = false, message = "Appointment not found or unauthorized." });
                 }
 
-                return Json(new 
-                { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     patientName = appointment.PatientUser.User.FullName,
                     appointmentDate = appointment.AppointmentDateTime.ToString("MMM dd, yyyy - HH:mm"),
                     notes = appointment.Notes ?? "No additional notes"
@@ -212,10 +255,10 @@ namespace HealthCareSystem.Controllers
         {
             // Get appointments for the month
             var monthAppointments = await _appointmentService.GetAppointmentsByMonthAsync(doctorId, currentMonth);
-            
+
             // Get today's appointments
             var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
-            
+
             // Get upcoming appointments (next 7 days)
             var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(doctorId);
             var nextWeekAppointments = upcomingAppointments.Where(a => a.AppointmentDateTime <= DateTime.Now.AddDays(7)).ToList();
@@ -235,11 +278,11 @@ namespace HealthCareSystem.Controllers
         private List<CalendarDay> BuildCalendarDays(DateTime currentMonth, List<Appointment> monthAppointments)
         {
             var calendarDays = new List<CalendarDay>();
-            
+
             // Get the first day of the month and find the start of the calendar grid
             var firstDayOfMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
             var startDate = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
-            
+
             // Build 42 days (6 weeks) for the calendar grid
             for (int i = 0; i < 42; i++)
             {
@@ -280,13 +323,13 @@ namespace HealthCareSystem.Controllers
         private string GetAppointmentType(string? notes)
         {
             if (string.IsNullOrEmpty(notes)) return "General";
-            
+
             var lowerNotes = notes.ToLower();
             if (lowerNotes.Contains("follow-up")) return "Follow-up";
             if (lowerNotes.Contains("check-up")) return "Check-up";
             if (lowerNotes.Contains("emergency")) return "Emergency";
             if (lowerNotes.Contains("consultation")) return "Consultation";
-            
+
             return "General";
         }
 
@@ -300,6 +343,50 @@ namespace HealthCareSystem.Controllers
                 "cancelled" => "danger",
                 _ => "secondary"
             };
+        }
+
+        [HttpPost("/sendMail")]
+        public async Task<IActionResult> SendEmailAsync()
+        {
+            try
+            {
+                // Gọi phương thức SendEmailAsync từ GmailHelper để gửi email
+                await _gmailHelper.SendEmailAsync();
+
+                // Trả về một JSON với thông báo thành công
+                return Json(new { success = true, message = "Email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                // Trả về một JSON với thông báo lỗi
+                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
+            }
+        }
+        [HttpPost("/updateImage")]
+        public async Task<IActionResult> UploadImage(IFormFile avatar)
+        {
+            try
+            {
+                if (avatar == null || avatar.Length == 0)
+                {
+                    return BadRequest("No file uploaded.");
+                }
+
+                var imageUrl = await _photoService.UploadImageAsync(avatar);
+                if(imageUrl != null)
+                {
+                    await _doctorService.UpdateImageUrlDoctor(imageUrl, currentUser.Value);
+
+                    return Json(new { success = true, message = "Update image successfully" });
+                }
+
+                return Json(new { success = false, message = "Update image error" });
+            }
+            catch (Exception ex)
+            {
+                // Trả về một JSON với thông báo lỗi
+                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
+            }
         }
     }
 }

@@ -35,5 +35,22 @@ namespace Repositories.Repositories
             return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
         }
 
+        public async Task UpdateImageUrlDoctor(string url, int userId)
+        {
+            try
+            {
+                var doctor = await _context.Doctors.Include(d => d.User).Include(d => d.Specialty).Include(d => d.Appointments).FirstOrDefaultAsync(d => d.UserId == userId);
+                if (doctor != null)
+                {
+                    doctor.User.AvatarUrl = url;
+                    _context.Doctors.Update(doctor);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
