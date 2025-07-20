@@ -57,6 +57,7 @@ namespace Repositories.Repositories
             {
                 var deleteMessages = await _context.Aimessages.Where(m => m.UserId == conversationId).ToListAsync();
                 _context.Aimessages.RemoveRange(deleteMessages);
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

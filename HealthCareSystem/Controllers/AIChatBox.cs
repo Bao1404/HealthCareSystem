@@ -160,5 +160,15 @@ namespace HealthCareSystem.Controllers
 
             return Ok(messages);
         }
+        [HttpDelete("messages/delete/{userId}")]
+        public async Task<IActionResult> DeleteHistory(int userId)
+        {
+            if(userId != 0)
+            {
+                await _aiMessageService.DeleteMessageByConversationId(userId);
+                return Ok();
+            }
+            return BadRequest();
+        }
     }
 }

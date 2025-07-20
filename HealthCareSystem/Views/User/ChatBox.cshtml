@@ -47,9 +47,9 @@
                                 <p>Your personal health companion</p>
                             </div>
                         </div>
-                        <div class="ai-status">
-                            <div class="status-indicator online"></div>
-                            <span class="status-text">Online</span>
+                        <div class="ai-delete-btn">
+                            <input type="text" name="userId" value="@Model.UserId" hidden/>
+                            <button onclick="deleteAllMessages(@Model.UserId)" class="btn btn-primary">Delete Chat History</button>
                         </div>
                     </div>
 
@@ -167,5 +167,24 @@
         </div>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function deleteAllMessages(userId) {
+            $.ajax({
+                url: `/api/chatbox/messages/delete/${userId}`,  // Địa chỉ API xóa tin nhắn
+                type: 'DELETE',  // Phương thức DELETE
+                success: function(response) {
+                    $("#aiChatMessages").empty();                 
+                },
+            });
+        }
 
+        // Đảm bảo nút "Delete Chat History" sẽ gọi hàm deleteAllMessages khi nhấn
+        $("button").on("click", function() {
+            var userId = $(this).closest('.ai-delete-btn').find('input[name="userId"]').val();
+            deleteAllMessages(userId);
+        });
+    });
+</script>
 <script src="~/js/user/ai-chat.js"></script>

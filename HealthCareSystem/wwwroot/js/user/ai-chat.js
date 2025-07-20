@@ -158,6 +158,7 @@ function getMessages(userId) {
         .catch(err => console.error("Error fetching messages:", err));
 }
 
+
 // Đặt lịch với bác sĩ
 function bookWithDoctor(doctorId) {
     localStorage.setItem("selectedDoctorId", doctorId);
