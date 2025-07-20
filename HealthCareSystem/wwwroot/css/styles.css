@@ -2941,6 +2941,20 @@ input:checked + .slider {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* Manual modal styles for fallback */
+.modal.show {
+    display: block !important;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
 .modal-header {
     border-bottom: 1px solid var(--border-color);
     padding: 1.5rem;

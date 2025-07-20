@@ -36,6 +36,8 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+            builder.Services.AddScoped<ITimeOffService, TimeOffService>();
+            builder.Services.AddScoped<ITimeOffRepository, TimeOffRepository>();
             builder.Services.AddSession();
             builder.Services.AddSignalR();
 

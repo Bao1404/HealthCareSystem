@@ -1,10 +1,13 @@
-﻿namespace BusinessObjects;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BusinessObjects;
 
 public partial class Aimessage
 {
     public int AimessageId { get; set; }
 
-    public int AiconversationId { get; set; }
+    public int UserId { get; set; }
 
     public string Sender { get; set; } = null!;
 
@@ -16,5 +19,5 @@ public partial class Aimessage
 
     public bool? IsRead { get; set; }
 
-    public virtual Aiconversation Aiconversation { get; set; } = null!;
+    public virtual Aiconversation User { get; set; } = null!;
 }

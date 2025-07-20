@@ -1,4 +1,7 @@
-﻿namespace BusinessObjects;
+﻿using System;
+using System.Collections.Generic;
+
+namespace BusinessObjects;
 
 public partial class Doctor
 {
@@ -22,5 +25,9 @@ public partial class Doctor
 
     public virtual Specialty? Specialty { get; set; }
 
+    public virtual ICollection<TimeOff> TimeOffs { get; set; } = new List<TimeOff>();
+
     public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<WorkingHour> WorkingHours { get; set; } = new List<WorkingHour>();
 }

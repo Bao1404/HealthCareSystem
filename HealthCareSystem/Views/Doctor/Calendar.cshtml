@@ -70,27 +70,27 @@
                            style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #17a2b8; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
                             📅 Today
                         </a>
-                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Calendar Grid -->
-            <div class="dashboard-card">
-                <div class="card-content">
-                    <div class="calendar-container">
-                        <!-- Calendar Header -->
-                        <div class="calendar-header">
-                            <div class="calendar-day-header">Sun</div>
-                            <div class="calendar-day-header">Mon</div>
-                            <div class="calendar-day-header">Tue</div>
-                            <div class="calendar-day-header">Wed</div>
-                            <div class="calendar-day-header">Thu</div>
-                            <div class="calendar-day-header">Fri</div>
-                            <div class="calendar-day-header">Sat</div>
-                        </div>
+        <!-- Calendar Grid -->
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="calendar-container">
+                    <!-- Calendar Header -->
+                    <div class="calendar-header">
+                        <div class="calendar-day-header" style="background: #f8fafc !important;" >Sun</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Mon</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Tue</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Wed</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Thu</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Fri</div>
+                        <div class="calendar-day-header" style="background: #f8fafc !important;">Sat</div>
+                    </div>
 
-                        <!-- Calendar Body -->
-                        <div class="calendar-body" id="calendarBody">
+                    <!-- Calendar Body -->
+                    <div class="calendar-body" id="calendarBody">
                             @for (int week = 0; week < 6; week++)
                             {
                                 <div class="calendar-week">
@@ -212,7 +212,7 @@
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         @TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+            </div>
 }
 
 @if (TempData["ErrorMessage"] != null)
