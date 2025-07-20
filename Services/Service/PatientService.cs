@@ -12,5 +12,6 @@ namespace Services.Service
         }
         public Task CreatePatient(Patient patient) => _patientRepository.CreatePatient(patient);
         public async Task<Patient?> GetByUserIdAsync(int userId) => await _patientRepository.GetByUserIdAsync(userId);
+        public Task<List<Patient>> GetAllPatientsAsync() => _patientRepository.GetAllPatientsAsync();
     }
 }
