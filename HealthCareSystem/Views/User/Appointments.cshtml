@@ -372,6 +372,36 @@
             });
         }, 5000);
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const doctorId = urlParams.get('doctorId'); // Lấy doctorId từ URL
+        const specialtyId = urlParams.get('specialtyId'); // Lấy specialtyId từ URL
+
+        if (doctorId) {
+            const specialtyDropdown = document.getElementById("specialty");
+            const doctorDropdown = document.getElementById("doctor");
+
+            // Điền giá trị vào dropdown Specialty
+            specialtyDropdown.value = specialtyId;
+
+            // Gọi lại sự kiện change của specialty để tải danh sách bác sĩ
+            specialtyDropdown.dispatchEvent(new Event('change'));
+
+            // Đảm bảo danh sách bác sĩ đã được tải xong trước khi điền giá trị
+            const checkDoctorsLoaded = setInterval(() => {
+                const options = doctorDropdown.querySelectorAll('option');
+                if (options.length > 1) { // Kiểm tra nếu danh sách bác sĩ đã được tải
+                    doctorDropdown.value = doctorId; // Điền giá trị bác sĩ
+                    clearInterval(checkDoctorsLoaded); // Dừng kiểm tra
+                }
+            }, 100); // Kiểm tra mỗi 100ms
+
+            // Hiển thị modal
+            const bookAppointmentModal = new bootstrap.Modal(document.getElementById('bookAppointmentModal'));
+            bookAppointmentModal.show();
+        }
+    });
 </script>
 
 <style>

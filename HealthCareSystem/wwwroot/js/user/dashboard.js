@@ -1,6 +1,5 @@
 ﻿// Dashboard functionality
 document.addEventListener("DOMContentLoaded", () => {
-    updateUserInfo()
     loadUpcomingAppointments()
     loadAppointmentHistory()
     initializeMiniCalendar()

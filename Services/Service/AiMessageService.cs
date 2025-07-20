@@ -19,5 +19,6 @@ namespace Services.Service
         public Task CreateMessage(Aimessage msg) => _repository.CreateMessage(msg);
         public Task<List<Aimessage>> GetMessagesByUserId(int userId) => _repository.GetMessagesByUserId(userId);
         public Task SaveMessage(Aimessage[] msg) => _repository.SaveMessage(msg);
+        public Task DeleteMessageByConversationId(int conversationId) => _repository.DeleteMessageByConversationId(conversationId);
     }
 }

@@ -10,7 +10,7 @@
             var specialtyKeywords = new Dictionary<string, List<string>>()
         {
             { "Tim mạch", new List<string> { "tim", "huyết áp", "tăng huyết áp", "mạch máu", "nhồi máu cơ tim", "cơn đau ngực" } },
-            { "Da liễu", new List<string> { "da", "mụn", "nám", "chàm", "eczema", "viêm da", "bệnh vảy nến" } },
+            { "Da liễu", new List<string> { "da", "mụn", "nám", "chàm", "eczema", "viêm da", "bệnh vảy nến", "bỏng" } },
             { "Nội khoa", new List<string> { "tiểu đường", "huyết áp", "bệnh tim mạch", "hô hấp", "thận", "viêm gan", "xơ gan" } },
             { "Chấn thương chỉnh hình", new List<string> { "xương", "khớp", "cổ tay", "gãy xương", "thoái hóa khớp", "viêm khớp", "bệnh gút" } },
             { "Thần kinh", new List<string> { "đau đầu", "tai biến", "đột quỵ", "chóng mặt", "suy giảm trí nhớ", "bệnh Parkinson", "động kinh" } },

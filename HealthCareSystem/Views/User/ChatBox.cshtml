@@ -87,7 +87,7 @@
 
                     <!-- AI Chat Input -->
                     <div class="ai-chat-input-container">
-                        <form class="ai-chat-input-form" onsubmit="sendAIMessage(event)">
+                        <form class="ai-chat-input-form" id="aiChatForm" onsubmit="sendAIMessage(event)">
                             <div class="ai-chat-input-wrapper">
                                 <input type="text" class="ai-chat-input" id="aiMessageInput" placeholder="Ask me anything about your health...">
                                 <button type="button" class="ai-voice-btn" onclick="startVoiceInput()">
@@ -104,53 +104,6 @@
 
             <!-- Quick Questions & Features Panel -->
             <div class="quick-questions-panel">
-                <!-- Quick Questions -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h5 class="card-title">Quick Questions</h5>
-                    </div>
-                    <div class="card-content">
-                        <div class="quick-questions-grid">
-                            <button class="quick-question-btn" onclick="askQuickQuestion('What are the symptoms of flu?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-thermometer-half"></i>
-                                </div>
-                                <span>Flu Symptoms</span>
-                            </button>
-                            <button class="quick-question-btn" onclick="askQuickQuestion('How to manage high blood pressure?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-heart"></i>
-                                </div>
-                                <span>Blood Pressure</span>
-                            </button>
-                            <button class="quick-question-btn" onclick="askQuickQuestion('What foods are good for diabetes?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-apple-alt"></i>
-                                </div>
-                                <span>Diabetes Diet</span>
-                            </button>
-                            <button class="quick-question-btn" onclick="askQuickQuestion('How much water should I drink daily?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-tint"></i>
-                                </div>
-                                <span>Daily Water Intake</span>
-                            </button>
-                            <button class="quick-question-btn" onclick="askQuickQuestion('What are healthy sleep habits?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-bed"></i>
-                                </div>
-                                <span>Sleep Health</span>
-                            </button>
-                            <button class="quick-question-btn" onclick="askQuickQuestion('How to reduce stress naturally?')">
-                                <div class="question-icon">
-                                    <i class="fas fa-leaf"></i>
-                                </div>
-                                <span>Stress Management</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- AI Features -->
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -199,7 +152,7 @@
                 </div>
 
                 <!-- Recommended Doctors -->
-                <div class="dashboard-card recommended-doctors-card" id="recommendedDoctorsCard" style="display: none;">
+                <div class="dashboard-card recommended-doctors-card" id="recommendedDoctorsCard">
                     <div class="card-header">
                         <h5 class="card-title">Recommended Doctors</h5>
                         <a href="doctors-modern.html" class="view-all-link">View All</a>

@@ -32,8 +32,8 @@ function sendAIMessage(e) {
             addMessage("ai", data.aiReply);
 
             // Nếu có danh sách bác sĩ gợi ý
-            if (data.recommendedDoctor?.length) {
-                renderRecommendedDoctors(data.recommendedDoctor);
+            if (data.recommendedDoctors?.length) {
+                renderRecommendedDoctors(data.recommendedDoctors);
             } else {
                 document.getElementById("recommendedDoctorsCard").style.display = "none";
             }
@@ -52,7 +52,7 @@ function renderRecommendedDoctors(doctors) {
     grid.innerHTML = doctors.map(d => `
     <div class="recommended-doctor-card">
       <div class="doctor-card-header">
-        <img src="${d.User || '/placeholder.svg?height=60&width=60'}"
+        <img src="${d.avatar}"
              alt="${d.fullName}" class="doctor-card-avatar">
         <div class="doctor-card-info">
           <h6>${d.fullName}</h6>
@@ -61,9 +61,9 @@ function renderRecommendedDoctors(doctors) {
         </div>
       </div>
       <div class="doctor-card-footer">
-        <span class="availability-badge">${d.availability || 'Liên hệ'}</span>
-        <button class="btn btn-sm btn-primary"
-                onclick="bookWithDoctor(${d.userId})">Đặt lịch</button>
+        <a href="/User/Appointments?doctorId=${d.userId}&specialtyId=${d.specialtyId}" class="btn btn-sm btn-primary">
+            Đặt lịch
+        </a>
       </div>
     </div>
   `).join("");

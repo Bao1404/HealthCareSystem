@@ -51,5 +51,17 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
+        public async Task DeleteMessageByConversationId(int conversationId)
+        {
+            try
+            {
+                var deleteMessages = await _context.Aimessages.Where(m => m.UserId == conversationId).ToListAsync();
+                _context.Aimessages.RemoveRange(deleteMessages);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
