@@ -21,9 +21,9 @@
             </button>
             <a asp-controller="User" asp-action="Profile" style="text-decoration: none;">
                 <div class="user-profile">
-                    <img src="@Model.AvatarUrl" alt="User" class="user-avatar">
+                    <img src="@Model.User.AvatarUrl" alt="User" class="user-avatar">
                     <div class="user-info">
-                        <h6 id="">@Model.FullName</h6>
+                        <h6 id="">@Model.User.FullName</h6>
                         <p>Patient</p>
                     </div>
                 </div>
@@ -46,22 +46,22 @@
                     <div class="profile-info">
                         <div class="profile-avatar-section">
                             <div class="profile-avatar-container">
-                                <img src="@Model.AvatarUrl" alt="Profile" class="profile-avatar-xl">
+                                <img src="@Model.User.AvatarUrl" alt="Profile" class="profile-avatar-xl">
                                 <button class="avatar-edit-btn" onclick="changeAvatar()">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
                             <div class="profile-basic-info">
-                                <h4 id="profileName">@Model.FullName</h4>
-                                <p id="profileEmail">@Model.Email</p>
-                                <p id="profilePhone">@Model.PhoneNumber</p>
+                                <h4 id="profileName">@Model.User.FullName</h4>
+                                <p id="profileEmail">@Model.User.Email</p>
+                                <p id="profilePhone">@Model.User.PhoneNumber</p>
                                 <div class="profile-badges">
                                     <span class="profile-badge verified">
                                         <i class="fas fa-check-circle"></i> Verified
                                     </span>
-                                    <span class="profile-badge member">
+                                    @* <span class="profile-badge member">
                                         <i class="fas fa-star"></i> Premium Member
-                                    </span>
+                                    </span> *@
                                 </div>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <span class="detail-label">Date of Birth</span>
-                                    <span class="detail-value" id="profileDOB">January 1, 1990</span>
+                                    <span class="detail-value" id="profileDOB">@Model.DateOfBirth</span>
                                 </div>
                             </div>
                             <div class="detail-card">
@@ -81,7 +81,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <span class="detail-label">Gender</span>
-                                    <span class="detail-value">Male</span>
+                                    <span class="detail-value">@Model.Gender</span>
                                 </div>
                             </div>
                             <div class="detail-card">
@@ -90,7 +90,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <span class="detail-label">Address</span>
-                                    <span class="detail-value">123 Main St, City, State 12345</span>
+                                    <span class="detail-value">@Model.Address</span>
                                 </div>
                             </div>
                             <div class="detail-card">
@@ -99,7 +99,7 @@
                                 </div>
                                 <div class="detail-content">
                                     <span class="detail-label">Emergency Contact</span>
-                                    <span class="detail-value">Jane Doe - (555) 987-6543</span>
+                                    <span class="detail-value">@Model.EmergencyPhoneNumber</span>
                                 </div>
                             </div>
                         </div>
@@ -124,7 +124,7 @@
                                 </div>
                                 <div class="metric-info">
                                     <h6>Blood Type</h6>
-                                    <span class="metric-value">O+</span>
+                                    <span class="metric-value">@Model.BloodType</span>
                                 </div>
                             </div>
                         </div>
@@ -135,7 +135,7 @@
                                 </div>
                                 <div class="metric-info">
                                     <h6>Weight</h6>
-                                    <span class="metric-value">68 kg</span>
+                                    <span class="metric-value">@Model.Weight kg</span>
                                 </div>
                             </div>
                         </div>
@@ -146,7 +146,7 @@
                                 </div>
                                 <div class="metric-info">
                                     <h6>Height</h6>
-                                    <span class="metric-value">175 cm</span>
+                                    <span class="metric-value">@Model.Height cm</span>
                                 </div>
                             </div>
                         </div>
@@ -157,7 +157,7 @@
                                 </div>
                                 <div class="metric-info">
                                     <h6>BMI</h6>
-                                    <span class="metric-value">22.5</span>
+                                    <span class="metric-value">@Model.Bmi</span>
                                 </div>
                             </div>
                         </div>
@@ -167,14 +167,13 @@
                         <div class="health-section">
                             <h6>Allergies</h6>
                             <div class="health-tags">
-                                <span class="health-tag allergy">Peanuts</span>
-                                <span class="health-tag allergy">Shellfish</span>
-                                <button class="add-tag-btn" onclick="addAllergy()">
+                                <span class="health-tag allergy">@Model.Allergies</span>
+                                @* <button class="add-tag-btn" onclick="addAllergy()">
                                     <i class="fas fa-plus"></i> Add
-                                </button>
+                                </button> *@
                             </div>
                         </div>
-                        <div class="health-section">
+                        @* <div class="health-section">
                             <h6>Current Medications</h6>
                             <div class="health-tags">
                                 <span class="health-tag medication">Lisinopril 10mg</span>
@@ -183,12 +182,14 @@
                                     <i class="fas fa-plus"></i> Add
                                 </button>
                             </div>
-                        </div>
+                        </div> *@
                         <div class="health-section">
                             <h6>Medical Conditions</h6>
                             <div class="health-tags">
-                                <span class="health-tag condition">Hypertension</span>
-                                <span class="health-tag condition">Type 2 Diabetes</span>
+                                @foreach (var history in ViewBag.MedicalHistory)
+                                {
+                                    <span class="health-tag condition">@history.ConditionName</span>
+                                }
                                 <button class="add-tag-btn" onclick="addCondition()">
                                     <i class="fas fa-plus"></i> Add
                                 </button>
@@ -245,7 +246,7 @@
             </div>
 
             <!-- Account Settings -->
-            <div class="dashboard-card">
+            @* <div class="dashboard-card">
                 <div class="card-header-modern">
                     <h5>Account Settings</h5>
                 </div>
@@ -308,7 +309,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> *@
         </div>
     </div>
 </div>

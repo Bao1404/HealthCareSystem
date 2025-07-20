@@ -25,7 +25,7 @@ namespace Repositories.Repositories
         }
         public async Task<Patient?> GetByUserIdAsync(int userId)
         {
-            return await _context.Patients.FindAsync(userId);
+            return await _context.Patients.Include(p => p.User).Include(p => p.MedicalHistories).FirstOrDefaultAsync(p => p.UserId == userId);
         }
         public async Task<List<Patient>> GetAllPatientsAsync()
         {

@@ -15,16 +15,19 @@ namespace HealthCareSystem.Controllers
         private readonly ISpecialtyService _specialtyService;
         private readonly IAppointmentService _appointmentService;
         private readonly IPatientService _patientService;
+        private readonly IMedicalHistoriesService _medicalHistoriesService;
 
         public UserController(IUserService userService, IDoctorService doctorService,
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
-            IPatientService patientService)
+            IPatientService patientService,
+            IMedicalHistoriesService medicalHistoriesService)
         {
             _userService = userService;
             _doctorService = doctorService;
             _specialtyService = specialtyService;
             _appointmentService = appointmentService;
             _patientService = patientService;
+            _medicalHistoriesService = medicalHistoriesService;
         }
         public async Task<IActionResult> Index()
         {
@@ -348,8 +351,9 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var user = await _userService.GetUserById(currentUser.Value);
-            return View(user);
+            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+            ViewBag.MedicalHistory = await _medicalHistoriesService.GetHistoryByUserId(currentUser.Value);
+            return View(patient);
         }
 
         // API Methods for AJAX calls
