@@ -9,6 +9,7 @@ using Repositories.Repositories;
 using Services;
 using Services.Interface;
 using Services.Service;
+using HealthCareSystem.Service;
 
 namespace HealthCareSystem
 {
@@ -63,6 +64,7 @@ namespace HealthCareSystem
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
 
             builder.Services.AddScoped<GmailHelper>();
+            builder.Services.AddScoped<PhotoService>();
 
 
             builder.Services.AddSession();

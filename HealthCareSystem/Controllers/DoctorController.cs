@@ -363,17 +363,24 @@ namespace HealthCareSystem.Controllers
             }
         }
         [HttpPost("/updateImage")]
-        public async Task<IActionResult> UploadImage(IFormFile image)
+        public async Task<IActionResult> UploadImage(IFormFile avatar)
         {
             try
             {
-                if (image == null || image.Length == 0)
+                if (avatar == null || avatar.Length == 0)
                 {
                     return BadRequest("No file uploaded.");
                 }
 
-                var imageUrl = await _photoService.UploadImageAsync(image);
-                return Json(new { success = true, message = "Update image successfully" });
+                var imageUrl = await _photoService.UploadImageAsync(avatar);
+                if(imageUrl != null)
+                {
+                    await _doctorService.UpdateImageUrlDoctor(imageUrl, currentUser.Value);
+
+                    return Json(new { success = true, message = "Update image successfully" });
+                }
+
+                return Json(new { success = false, message = "Update image error" });
             }
             catch (Exception ex)
             {
