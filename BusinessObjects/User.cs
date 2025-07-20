@@ -23,7 +23,7 @@ public partial class User
 
     public DateTime? UpdatedAt { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public virtual Aiconversation? Aiconversation { get; set; }
 
