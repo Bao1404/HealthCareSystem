@@ -7,24 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\static\Call.html" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.70.0" />
+    <PackageReference Include="Google.Apis.Gmail.v1" Version="1.70.0.3833" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="MimeKit" Version="4.13.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Services\Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\static\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\static\Call.html" />
   </ItemGroup>
 
 </Project>

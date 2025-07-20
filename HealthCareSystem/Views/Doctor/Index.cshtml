@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model BusinessObjects.Doctor
 @{
     Layout = "_LayoutDoctor";
     ViewData["Title"] = "Dashboard";
@@ -20,10 +18,10 @@
                 <span class="notification-badge">5</span>
             </button>
             <div class="user-profile" onclick="window.location.href='doctor-profile.html'">
-                <img src="/placeholder.svg?height=32&width=32" alt="Doctor" class="user-avatar">
+                <img src="@Html.DisplayFor(Model => Model.User.AvatarUrl)" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">Dr. Sarah Johnson</h6>
-                    <p>Cardiologist</p>
+                    <h6 id="doctorName">@Html.DisplayFor(model => model.User.FullName)</h6>
+                    <p>@Html.DisplayFor(model => model.Specialty.Name)</p>
                 </div>
             </div>
         </div>

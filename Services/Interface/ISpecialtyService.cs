@@ -10,5 +10,6 @@ namespace Services.Interface
     public interface ISpecialtyService
     {
         Task<List<Specialty>> GetAllSpecialtiesAsync();
+        Task<Specialty> GetSpecialtyByName(string name);
     }
 }

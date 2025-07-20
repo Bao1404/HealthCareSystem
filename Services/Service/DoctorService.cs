@@ -19,5 +19,18 @@ namespace Services.Service
         public void UpdateDoctor(Doctor doctor) => _doctorRepository.Update(doctor);
         public void DeleteDoctor(int id) => _doctorRepository.Delete(id);
         public IEnumerable<Doctor> GetBySpecialty(int specialtyId) => _doctorRepository.GetAll().Where(d => d.SpecialtyId == specialtyId);
+
+        public Task<Doctor> GetDoctorsByIdAsync(int id)
+        {
+            return _doctorRepository.GetDoctorsByIdAsync(id);
+        }
+        public async Task<List<Doctor>> GetDoctorsAsync() => 
+            await _doctorRepository.GetDoctorsAsync();
+        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId) => 
+            await _doctorRepository.GetBySpecialtyAsync(specialtyId);
+        public async Task UpdateImageUrlDoctor(string url, int userId)
+        {
+             await _doctorRepository.UpdateImageUrlDoctor(url, userId);
+        }
     }
 }

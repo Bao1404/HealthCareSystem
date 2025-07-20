@@ -11,5 +11,8 @@ namespace Services.Interface
         void UpdatePatient(Patient patient);
         void DeletePatient(int id);
         Patient GetByUserId(int userId);
+        Task CreatePatient(Patient patient);
+        Task<Patient?> GetByUserIdAsync(int userId);
+        Task<List<Patient>> GetAllPatientsAsync();
     }
 }

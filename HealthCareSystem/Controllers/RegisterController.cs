@@ -3,7 +3,7 @@ using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Interface;
-using Services;
+
 namespace HealthCareSystem.Controllers
 {
     public class RegisterController : Controller

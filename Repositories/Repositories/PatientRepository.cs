@@ -2,6 +2,8 @@
 using Repositories.Interface;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Repositories.Repositories
 {
@@ -49,6 +51,16 @@ namespace Repositories.Repositories
         {
             return await _context.Patients.FindAsync(userId);
         }
-
+        public async Task<List<Patient>> GetAllPatientsAsync()
+        {
+            try
+            {
+                return await _context.Patients.Include(d => d.User).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
