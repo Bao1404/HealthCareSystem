@@ -1,4 +1,4 @@
-﻿// Admin Users Management functionality
+// Admin Users Management functionality
 let users = []
 let filteredUsers = []
 let currentPage = 1
@@ -13,11 +13,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadUsers() {
     try {
-        const response = await fetch('/Admin/GetUsers?' + new URLSearchParams({
+        const params = new URLSearchParams({
             page: currentPage,
-            pageSize: usersPerPage
-        }))
-        
+            pageSize: usersPerPage,
+            role: 'doctor'
+        });
+        const response = await fetch('/Admin/GetUsers?' + params)
         if (response.ok) {
             const data = await response.json()
             users = data.users
@@ -42,30 +43,28 @@ function setupSearch() {
 
 async function applyFilters() {
     const searchTerm = document.getElementById("searchInput").value
-    const roleFilter = document.getElementById("roleFilter").value
     const statusFilter = document.getElementById("statusFilter").value
-    const dateFilter = document.getElementById("dateFilter").value
+    const fromDate = document.getElementById("fromDateFilter").value
+    const toDate = document.getElementById("toDateFilter").value
 
     const params = new URLSearchParams({
         page: currentPage,
-        pageSize: usersPerPage
+        pageSize: usersPerPage,
+        role: 'doctor'
     })
 
     if (searchTerm) params.append('searchTerm', searchTerm)
-    if (roleFilter) params.append('role', roleFilter)
     if (statusFilter) {
         const isActive = statusFilter === 'active'
         params.append('isActive', isActive)
     }
-    if (dateFilter) params.append('dateFilter', dateFilter)
-
-    console.log('Applying filters with params:', params.toString())
+    if (fromDate) params.append('fromDate', fromDate)
+    if (toDate) params.append('toDate', toDate)
 
     try {
         const response = await fetch('/Admin/GetUsers?' + params)
         if (response.ok) {
             const data = await response.json()
-            console.log('Filter response:', data)
             users = data.users
             filteredUsers = [...users]
             renderUsers()
@@ -79,11 +78,10 @@ async function applyFilters() {
 }
 
 function clearFilters() {
-    document.getElementById("roleFilter").value = ""
     document.getElementById("statusFilter").value = ""
-    document.getElementById("dateFilter").value = ""
     document.getElementById("searchInput").value = ""
-
+    document.getElementById("fromDateFilter").value = ""
+    document.getElementById("toDateFilter").value = ""
     currentPage = 1
     loadUsers()
 }
@@ -116,13 +114,13 @@ function renderUsers() {
             <td>${user.lastLogin}</td>
             <td>
                 <div class="btn-group" role="group">
-                    <a href="/Admin/UserEdit/${user.userId}" class="btn btn-sm btn-outline-primary" title="Edit">
+                    <a href="/Admin/DoctorEdit/${user.userId}" class="btn btn-sm btn-outline-primary" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <a href="/Admin/UserDetail/${user.userId}" class="btn btn-sm btn-outline-info" title="View">
+                    <a href="/Admin/DoctorDetail/${user.userId}" class="btn btn-sm btn-outline-info" title="View">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/Admin/UserDelete/${user.userId}" class="btn btn-sm btn-outline-danger" title="Delete">
+                    <a href="/Admin/DoctorDelete/${user.userId}" class="btn btn-sm btn-outline-danger" title="Delete">
                         <i class="fas fa-trash"></i>
                     </a>
                 </div>
@@ -174,14 +172,8 @@ async function changePage(page) {
 
 function getRoleBadgeColor(role) {
     switch (role.toLowerCase()) {
-        case "admin":
-            return "danger"
         case "doctor":
             return "primary"
-        case "staff":
-            return "warning"
-        case "patient":
-            return "success"
         default:
             return "secondary"
     }
@@ -247,7 +239,7 @@ function updateBulkActions() {
 async function addUser() {
     const form = document.getElementById("addUserForm")
     const formData = new FormData(form)
-    
+
     const userData = {
         fullName: document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
         email: document.getElementById("email").value,
@@ -364,10 +356,10 @@ function showAlert(type, message) {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `
-    
+
     const container = document.querySelector('.main-content')
     container.insertBefore(alertDiv, container.firstChild)
-    
+
     setTimeout(() => {
         alertDiv.remove()
     }, 5000)

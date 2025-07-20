@@ -1,10 +1,15 @@
 using BusinessObjects;
+using System.Collections.Generic;
 
-namespace Services
+namespace Services.Interface
 {
     public interface IPatientService
     {
-        Task CreatePatient(Patient patient);
-        Task<Patient?> GetByUserIdAsync(int userId);
+        IEnumerable<Patient> GetAllPatients();
+        Patient GetPatientById(int id);
+        void AddPatient(Patient patient);
+        void UpdatePatient(Patient patient);
+        void DeletePatient(int id);
+        Patient GetByUserId(int userId);
     }
 }

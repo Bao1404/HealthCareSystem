@@ -1,11 +1,15 @@
 ﻿using BusinessObjects;
+using System.Collections.Generic;
 
 namespace Services.Interface
 {
     public interface IDoctorService
     {
-        public Task<Doctor> GetDoctorsByIdAsync(int id);
-        Task<List<Doctor>> GetDoctorsAsync();
-        Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId);
+        IEnumerable<Doctor> GetAllDoctors();
+        Doctor GetDoctorById(int id);
+        void AddDoctor(Doctor doctor);
+        void UpdateDoctor(Doctor doctor);
+        void DeleteDoctor(int id);
+        IEnumerable<Doctor> GetBySpecialty(int specialtyId);
     }
 }
