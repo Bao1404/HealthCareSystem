@@ -99,7 +99,7 @@ namespace HealthCareSystem.Controllers
         }
         public async Task<IActionResult> ProfileAsync(int id)
         {
-            var doctor = await _doctorService.GetDoctorsByIdAsync(id);
+            var doctor = _doctorService.GetDoctorById(id);
 
             if (doctor == null)
             {

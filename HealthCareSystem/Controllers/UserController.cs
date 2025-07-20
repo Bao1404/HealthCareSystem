@@ -296,7 +296,7 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var doctors = await _doctorService.GetDoctorsAsync();
+            var doctors = _doctorService.GetAllDoctors();
             var specialties = await _specialtyService.GetAllSpecialtiesAsync();
 
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
@@ -360,7 +360,7 @@ namespace HealthCareSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDoctorsBySpecialty(int specialtyId)
         {
-            var doctors = await _doctorService.GetBySpecialtyAsync(specialtyId);
+            var doctors = _doctorService.GetBySpecialty(specialtyId);
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
             {
                 UserId = d.UserId,
@@ -489,7 +489,10 @@ namespace HealthCareSystem.Controllers
             try
             {
                 // Validate that current user exists as a patient
-                var patient = await _patientService.GetByUserIdAsync(currentUserId.Value);
+                // Remove or comment out the following usages:
+                // var patient = await _patientService.GetByUserIdAsync(currentUserId.Value);
+                // If you need this feature, implement a synchronous version in the service and repository, otherwise remove the related usages.
+                var patient = _patientService.GetByUserId(currentUserId.Value);
                 if (patient == null)
                 {
                     TempData["Error"] = "Patient record not found. Please contact support.";
@@ -500,7 +503,7 @@ namespace HealthCareSystem.Controllers
                 Doctor doctor = null;
                 try
                 {
-                    doctor = await _doctorService.GetDoctorsByIdAsync(model.DoctorUserId);
+                    doctor = _doctorService.GetDoctorById(model.DoctorUserId);
                 }
                 catch (Exception)
                 {
