@@ -1,9 +1,10 @@
+using BusinessObjects;
 using HealthCareSystem.Helper;
 using HealthCareSystem.Models;
+using HealthCareSystem.Service;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Interface;
-using BusinessObjects;
 using System.Threading.Tasks;
 using System.Threading.Tasks;
 
@@ -16,14 +17,16 @@ namespace HealthCareSystem.Controllers
         private readonly IUserService _userService;
         private readonly IPatientService _patientService;
         private readonly GmailHelper _gmailHelper;
+        private readonly PhotoService _photoService;
         private int? currentUser => HttpContext.Session.GetInt32("UserId");
-        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper)
+        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService)
         {
             _doctorService = doctorService;
             _appointmentService = appointmentService;
             _userService = userService;
             _patientService = patientService;
             _gmailHelper = gmailHelper;
+            _photoService = photoService;
         }
 
         public async Task<IActionResult> Index()
@@ -352,6 +355,25 @@ namespace HealthCareSystem.Controllers
 
                 // Trả về một JSON với thông báo thành công
                 return Json(new { success = true, message = "Email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                // Trả về một JSON với thông báo lỗi
+                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
+            }
+        }
+        [HttpPost("/updateImage")]
+        public async Task<IActionResult> UploadImage(IFormFile image)
+        {
+            try
+            {
+                if (image == null || image.Length == 0)
+                {
+                    return BadRequest("No file uploaded.");
+                }
+
+                var imageUrl = await _photoService.UploadImageAsync(image);
+                return Json(new { success = true, message = "Update image successfully" });
             }
             catch (Exception ex)
             {

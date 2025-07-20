@@ -26,6 +26,14 @@ namespace HealthCareSystem
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
             builder.Services.Configure<GmailApiOption>(builder.Configuration.GetSection("gmailApi"));
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+            builder.Services.AddSingleton(x =>
+            {
+                var config = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+                var account = new CloudinaryDotNet.Account(config.CloudName, config.ApiKey, config.ApiSecret);
+                return new CloudinaryDotNet.Cloudinary(account);
+            });
 
 
             builder.Services.AddHttpClient();
