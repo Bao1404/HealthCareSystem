@@ -51,6 +51,7 @@ namespace HealthCareSystem.Controllers
                 return RedirectToAction("Index", "Login");
             }
             var user = await _userService.GetUserById(currentUser.Value);
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
 
             var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(user.UserId);
             var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(user.UserId);
@@ -65,7 +66,7 @@ namespace HealthCareSystem.Controllers
             ViewBag.CancelledAppointments = cancelledAppointments;
             ViewBag.PendingCount = pendingAppointments.Count;
 
-            return View();
+            return View(doctor);
         }
         public async Task<IActionResult> Patients()
         {
@@ -92,19 +93,18 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var user = await _userService.GetUserById(currentUser.Value);
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
 
             ViewData["ActiveMenu"] = "Schedule";
-            return View(user);
+            return View(doctor);
         }
-        public async Task<IActionResult> ProfileAsync(int id)
+        public async Task<IActionResult> ProfileAsync()
         {
-            var doctor = _doctorService.GetDoctorById(id);
-
-            if (doctor == null)
+            if(currentUser == null)
             {
-                return NotFound();
+                return RedirectToAction("Index", "Login");
             }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             return View(doctor);
         }
         public async Task<IActionResult> Calendar(int? year, int? month)
@@ -117,13 +117,19 @@ namespace HealthCareSystem.Controllers
                 : new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
             var calendarViewModel = await BuildCalendarViewModelAsync(doctorId, currentDate);
+            ViewBag.Doctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
 
             return View(calendarViewModel);
         }
-        public IActionResult Messages()
+        public async Task<IActionResult> Messages()
         {
             ViewData["ActiveMenu"] = "Messages";
-            return View();
+            if(currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
+            return View(doctor);
         }
 
         [HttpPost]

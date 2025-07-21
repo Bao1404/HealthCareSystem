@@ -8,7 +8,7 @@ namespace Repositories.Interface
         IEnumerable<Patient> GetAll();
         Patient GetById(int id);
         void Add(Patient patient);
-        void Update(Patient patient);
+        Task Update(Patient patient);
         void Delete(int id);
         Task CreatePatient(Patient patient);
 

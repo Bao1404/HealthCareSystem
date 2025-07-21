@@ -355,7 +355,63 @@ namespace HealthCareSystem.Controllers
             ViewBag.MedicalHistory = await _medicalHistoriesService.GetHistoryByUserId(currentUser.Value);
             return View(patient);
         }
+        [HttpPost("Edit")]
+        public async Task<IActionResult> UpdateProfile()
+        {
+            var userId = Request.Form["userId"];
+            var email = Request.Form["email"];
+            var fullName = Request.Form["fullName"];
+            var phoneNumber = Request.Form["phone"];
+            var dateOfBirth = Request.Form["dob"];
+            var address = Request.Form["address"];
+            var gender = Request.Form["gender"];
+            var emergencyPhoneNumber = Request.Form["ePhone"];
 
+            var user = await _userService.GetUserById(int.Parse(userId));
+
+            user.Email = email;
+            user.FullName = fullName;
+            user.PhoneNumber = phoneNumber;
+            user.UpdatedAt = DateTime.Now;
+
+            await _userService.UpdateUser(user);
+
+            var patient = await _patientService.GetByUserIdAsync(int.Parse(userId));
+
+            patient.Address = address;
+            patient.DateOfBirth = DateOnly.Parse(dateOfBirth);
+            patient.Gender = gender;
+            patient.EmergencyPhoneNumber = emergencyPhoneNumber;
+            patient.UpdatedAt = DateTime.Now;
+
+            await _patientService.UpdatePatient(patient);
+
+            return RedirectToAction("Profile", "User");
+
+        }
+        [HttpPost("Health")]
+        public async Task<IActionResult> UpdateHealthProfile()
+        {
+            var useId = Request.Form["userId"];
+            var height = Request.Form["height"];
+            var weight = Request.Form["weight"];
+            var bloodType = Request.Form["blood"];
+            var allergies = Request.Form["allergy"];
+            var heightM = double.Parse(height) / 100.0;
+            double bmi = double.Parse(weight) / (heightM * heightM);
+
+            var patient = await _patientService.GetByUserIdAsync(int.Parse(useId));
+            patient.Height = int.Parse(height);
+            patient.Weight = int.Parse(weight);
+            patient.BloodType = bloodType;
+            patient.Allergies = allergies;
+            patient.Bmi = (decimal)bmi;
+            patient.UpdatedAt = DateTime.Now;
+
+            await _patientService.UpdatePatient(patient);
+
+            return RedirectToAction("Profile", "User");
+        }
         // API Methods for AJAX calls
         [HttpGet]
         public async Task<IActionResult> GetDoctorsBySpecialty(int specialtyId)

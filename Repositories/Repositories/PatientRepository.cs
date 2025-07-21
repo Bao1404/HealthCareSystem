@@ -21,10 +21,10 @@ namespace Repositories.Repositories
             _context.Patients.Add(patient);
             _context.SaveChanges();
         }
-        public void Update(Patient patient)
+        public async Task Update(Patient patient)
         {
             _context.Patients.Update(patient);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         public void Delete(int id)
         {

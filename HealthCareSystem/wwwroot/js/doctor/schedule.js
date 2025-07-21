@@ -11,9 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function initializeSchedule() {
-    const doctorName = localStorage.getItem("doctorName") || "Dr. Sarah Johnson"
-    document.getElementById("doctorName").textContent = doctorName
-
+    document.getElementById("doctorName").innerText;
     updateCurrentWeek()
 }
 

@@ -20,7 +20,7 @@ namespace Services.Service
         }
         public User GetAccountById(int id) => _userRepository.GetById(id);
         public void AddAccount(User user) => _userRepository.Add(user);
-        public void UpdateAccount(User user) => _userRepository.Update(user);
+        public Task UpdateAccount(User user) => _userRepository.UpdateUser(user);
         public void DeleteAccount(int id) => _userRepository.Delete(id);
     }
 } 
