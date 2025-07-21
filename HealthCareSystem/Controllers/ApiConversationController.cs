@@ -97,6 +97,77 @@ namespace HealthCareSystem.Controllers
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateConversation([FromBody] CreateConversationDto model)
+        {
+            try
+            {
+                // Tạo một cuộc trò chuyện mới
+                var conversation = new Conversation
+                {
+                    PatientUserId = model.PatientUserId,
+                    DoctorUserId = model.DoctorUserId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _conversationRepository.CreateAsync(conversation);
+
+                return Ok(conversation);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi từ máy chủ: {ex.Message}");
+            }
+        }
+        [HttpGet("find-or-create")]
+        public async Task<IActionResult> FindOrCreateConversation(int doctorId)
+        {
+            var patientId = HttpContext.Session.GetInt32("UserId");
+
+            if (patientId == null)
+            {
+                return Unauthorized(); // Trả về lỗi nếu bệnh nhân chưa đăng nhập
+            }
+
+            try
+            {
+                // Tìm cuộc trò chuyện giữa bệnh nhân và bác sĩ
+                var conversation = await _conversationRepository.FindConversationByPatientIdAndDoctorId((int)patientId, doctorId);
+
+                if (conversation != null)
+                {
+                    // Nếu đã có cuộc trò chuyện, điều hướng đến cuộc trò chuyện đó
+                    return Ok(new { success = true, conversationId = conversation.ConversationId });
+                }
+                else
+                {
+                    // Nếu không có cuộc trò chuyện, tạo cuộc trò chuyện mới
+                    var newConversation = new Conversation
+                    {
+                        PatientUserId = (int)patientId,
+                        DoctorUserId = doctorId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    // Tạo cuộc trò chuyện mới
+                    var createdConversation = await _conversationRepository.CreateAsync(newConversation);
+
+                    // Trả về thông tin cuộc trò chuyện mới đã tạo
+                    return Ok(new { success = false, conversationId = createdConversation.ConversationId });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi chi tiết nếu có
+               
+                return StatusCode(500, new { error = "Lỗi server: " + ex.Message });
+            }
+        }
+
+
+
 
     }
 }

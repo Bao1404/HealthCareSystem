@@ -36,9 +36,7 @@
             <div class="dashboard-card conversations-panel">
                 <div class="card-header">
                     <h5 class="card-title">Conversations</h5>
-                    <button class="btn btn-sm btn-primary" onclick="startNewConversation()">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    
                 </div>
                 <div class="conversations-list" id="conversationsList">
                     <!-- Populated by JavaScript -->
@@ -89,12 +87,20 @@
                                 <button type="button" class="attachment-btn" onclick="attachFile()">
                                     <i class="fas fa-paperclip"></i>
                                 </button>
+                                <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="previewFile()" />
+                                <!-- Preview Image -->
+                                <div id="imagePreview" style="display: none;">
+                                    <img id="previewImage" src="" alt="Preview" width="100" />
+                                </div>
                             </div>
                             <button type="submit" class="send-btn">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </form>
                     </div>
+
+
+
                 </div>
             </div>
         </div>

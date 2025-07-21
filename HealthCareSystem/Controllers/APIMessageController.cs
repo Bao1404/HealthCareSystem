@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using HealthCareSystem.Service;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepositories;
 
@@ -10,10 +11,12 @@ namespace HealthCareSystem.Controllers
     public class APIMessageController : ControllerBase
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly PhotoService _photoService;
 
-        public APIMessageController(IMessageRepository messageRepository)
+        public APIMessageController(IMessageRepository messageRepository, PhotoService photoService)
         {
             _messageRepository = messageRepository;
+            _photoService = photoService;
         }
 
         [HttpGet("conversation/{conversationId}")]
@@ -25,6 +28,7 @@ namespace HealthCareSystem.Controllers
             {
                 MessageId = m.MessageId,
                 Content = m.Content,
+                MessageType = m.MessageType,
                 SentAt = m.SentAt,
                 Sender = new SenderDTO
                 {
@@ -53,9 +57,27 @@ namespace HealthCareSystem.Controllers
             await _messageRepository.CreateMessage(message);
             return Ok(message);
         }
+        [HttpPost("send-image")]
+        public async Task<IActionResult> SendImage([FromForm] SendImageDto dto)
+        {
+            if (dto.File.Length <= 0) return BadRequest("No file uploaded");
 
+            // Tải ảnh lên Cloudinary
+            var imageUrl = await _photoService.UploadImageAsync(dto.File);
 
+            var message = new Message
+            {
+                ConversationId = dto.ConversationId,
+                SenderId = dto.SenderId,
+                Content = imageUrl,  // Lưu URL ảnh vào nội dung
+                MessageType = "image",  // Đặt kiểu tin nhắn là hình ảnh
+                SentAt = DateTime.Now,
+                IsRead = false
+            };
 
+            await _messageRepository.CreateMessage(message);
+            return Ok(message);
+        }
 
 
     }
