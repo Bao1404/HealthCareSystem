@@ -1,4 +1,12 @@
 ﻿/* Doctor Appointments Styles */
+.doctor-actions {
+    display: flex;
+    gap: 10px; /* Khoảng cách giữa hai nút */
+}
+
+    .doctor-actions .btn {
+        flex: 1; /* Giúp các nút có cùng kích thước */
+    }
 
 .appointment-item-detailed {
     border: 1px solid #e0e0e0;

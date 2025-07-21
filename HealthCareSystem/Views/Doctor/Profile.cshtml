@@ -18,14 +18,14 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">5</span>
             </button>
-            <div class="user-profile">
-                <img src="@Html.DisplayFor(Model => Model.User.AvatarUrl)" alt="Doctor" class="user-avatar">
+            <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
+                <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">
+                    <h6 id="">
                         @Html.DisplayFor(model => model.User.FullName)
                      </h6>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 
@@ -35,7 +35,7 @@
             <!-- Professional Information -->
             <div class="dashboard-card">
                 <div class="card-header-modern">
-                    <h5>Professional Information</h5>
+                    <h5>Personal Information</h5>
                     <button class="edit-profile-btn" onclick="editProfessionalInfo()">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -50,7 +50,7 @@
                                 </button>
                             </div>
                             <div class="profile-basic-info">
-                                <h4 id="doctorName">
+                                <h4 id="">
                                     @Html.DisplayFor(model => model.User.FullName)
                                 </h4>
                                 <p id="doctorBio">
@@ -212,9 +212,9 @@
             <div class="dashboard-card">
                 <div class="card-header-modern">
                     <h5>Schedule & Availability</h5>
-                    <button class="edit-profile-btn" onclick="editSchedule()">
+                    @* <button class="edit-profile-btn" onclick="editSchedule()">
                         <i class="fas fa-edit"></i>
-                    </button>
+                    </button> *@
                 </div>
                 <div class="card-content">
                     <div class="schedule-grid" style="border: none; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;">
@@ -245,77 +245,6 @@
                         <div class="schedule-day weekend">
                             <h6>Sunday</h6>
                             <p>Closed</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Account Settings -->
-            <div class="dashboard-card">
-                <div class="card-header-modern">
-                    <h5>Account Settings</h5>
-                </div>
-                <div class="card-content">
-                    <div class="settings-list">
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <i class="fas fa-bell setting-icon"></i>
-                                <div>
-                                    <h6>Email Notifications</h6>
-                                    <p>Receive notifications for new appointments and messages</p>
-                                </div>
-                            </div>
-                            <div class="setting-toggle">
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <i class="fas fa-mobile-alt setting-icon"></i>
-                                <div>
-                                    <h6>SMS Notifications</h6>
-                                    <p>Receive text messages for urgent patient matters</p>
-                                </div>
-                            </div>
-                            <div class="setting-toggle">
-                                <label class="switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <i class="fas fa-calendar setting-icon"></i>
-                                <div>
-                                    <h6>Auto-accept Appointments</h6>
-                                    <p>Automatically accept appointments during available hours</p>
-                                </div>
-                            </div>
-                            <div class="setting-toggle">
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="setting-item">
-                            <div class="setting-info">
-                                <i class="fas fa-lock setting-icon"></i>
-                                <div>
-                                    <h6>Two-Factor Authentication</h6>
-                                    <p>Add an extra layer of security to your account</p>
-                                </div>
-                            </div>
-                            <div class="setting-toggle">
-                                <label class="switch">
-                                    <input type="checkbox">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>

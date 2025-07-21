@@ -3,7 +3,7 @@ using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Interface;
-using Services;
+
 namespace HealthCareSystem.Controllers
 {
     public class RegisterController : Controller
@@ -70,7 +70,7 @@ namespace HealthCareSystem.Controllers
                         UpdatedAt = DateTime.Now
                     };
 
-                    await _patientService.CreatePatient(user.Patient);
+                    _patientService.AddPatient(user.Patient);
                 }
                 HttpContext.Session.SetInt32("UserId", user.UserId);
                 return RedirectToAction("FinalStep", "Register");

@@ -1,6 +1,4 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DoctorAndPatientViewModel
 @{
     Layout = "_LayoutDoctor";
     ViewData["Title"] = "Patients";
@@ -23,20 +21,20 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">5</span>
             </button>
-            <div class="user-profile" onclick="window.location.href='doctor-profile.html'">
-                <img src="/placeholder.svg?height=32&width=32" alt="Doctor" class="user-avatar">
+            <a class="user-profile" asp-action="Profile" asp-controller="Doctor">
+                <img src="@Model.Doctor.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">Dr. Sarah Johnson</h6>
-                    <p>Cardiologist</p>
+                    <h6 id="">@Model.Doctor.User.FullName</h6>
+                    <p>@Model.Doctor.Specialty.Name</p>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 
     <!-- Content -->
     <div class="content">
         <!-- Patient Filters -->
-        <div class="dashboard-card">
+        @* <div class="dashboard-card">
             <div class="card-content">
                 <div class="patient-filters">
                     <button class="filter-btn active" onclick="filterPatients('all')">All Patients</button>
@@ -46,12 +44,61 @@
                     <button class="filter-btn" onclick="filterPatients('new')">New</button>
                 </div>
             </div>
-        </div>
+        </div> *@
 
         <!-- Patients Grid -->
-        <div class="patients-grid" id="patientsGrid">
-            <!-- Populated by JavaScript -->
+        <div class="patients-grid" id="patientsGrid" style="padding-top: 10px">
+            @foreach (var patient in Model.Patients)
+            {
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div>
+                            <div class="d-flex">
+                                <div class="me-4">
+                                    <!-- Avatar and name -->
+                                    <div class="text-center">
+                                        <img src="@patient.User.AvatarUrl" alt="@patient.User.FullName" class="profile-avatar-xl rounded-circle mb-3" style="width: 120px; height: 120px;">
+                                        <h5>@patient.User.FullName</h5>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex-grow-1">
+                                        <!-- Patient Info -->
+                                        <div class="row g-1">
+                                            <div >
+                                                <p class="">Email: @patient.User.Email</p>
+                                            </div>
+                                            <div >
+                                                <p class="">Phone: @patient.User.PhoneNumber</p>
+                                            </div>
+                                            <div >
+                                                <p class="">Gender: @patient.Gender</p>
+                                            </div>
+                                            <div >
+                                                <p class="">Blood type: @patient.BloodType</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end">
+                                <form id="sendEmailForm">
+                                    <button type="submit" class="btn btn-primary">Medication Reminder</button>
+                                </form>
+
+                                <!-- Phần hiển thị thông báo -->
+                                <div id="message"></div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
+
     </div>
 </div>
 
@@ -146,6 +193,33 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#sendEmailForm').submit(function(event) {
+            event.preventDefault();  
+
+            // Gửi AJAX request
+            $.ajax({
+                url: '/sendMail', // Đường dẫn đến action
+                type: 'POST',
+                success: function(response) {
+                    // Hiển thị thông báo thành công
+                    if (response.success) {
+                        $('#message').html('<div class="alert alert-success">' + response.message + '</div>');
+                    } else {
+                        // Hiển thị thông báo lỗi
+                        $('#message').html('<div class="alert alert-danger">' + response.message + '</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Nếu có lỗi trong quá trình AJAX
+                    $('#message').html('<div class="alert alert-danger">Something went wrong, please try again later.</div>');
+                }
+            });
+        });
+    });
+</script>
 
 
 <script src="~/js/doctor/patients.js"></script>
