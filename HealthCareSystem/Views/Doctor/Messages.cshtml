@@ -23,7 +23,7 @@
             <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
                 <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="">@Model.User.FullName</h6>
+                    <h6 id="doctorName">@Model.User.FullName</h6>
                     <p>@Model.Specialty.Name</p>
                 </div>
             </a>

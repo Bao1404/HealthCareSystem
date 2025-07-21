@@ -135,6 +135,7 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
+            ViewData["DoctorId"] = currentUser.Value;
             var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             return View(doctor);
         }
