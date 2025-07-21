@@ -325,7 +325,7 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Messages(int conversationId)
+        public async Task<IActionResult> Messages(int conversationId)
         {
             if (currentUser == null)
             {
@@ -339,7 +339,7 @@ namespace HealthCareSystem.Controllers
                 return RedirectToAction("Index", "Home"); // Hoặc hiển thị thông báo lỗi
             }
 
-            ViewData["PatientId"] = patientId;
+            ViewData["PatientId"] = currentUser.Value;
             ViewData["ConversationId"] = conversationId; // Truyền conversationId ra view
             ViewData["ActiveMenu"] = "Messages";
             var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
