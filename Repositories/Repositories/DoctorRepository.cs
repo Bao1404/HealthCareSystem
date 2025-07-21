@@ -55,7 +55,11 @@ namespace Repositories.Repositories
 
         public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId)
         {
-            return await _context.Doctors.Include(d => d.User).Where(d => d.SpecialtyId == specialtyId).ToListAsync();
+            return await _context.Doctors
+                .Include(d => d.User)
+                .Include(d => d.Specialty)
+                .Where(d => d.SpecialtyId == specialtyId)
+                .ToListAsync();
         }
 
         public async Task UpdateImageUrlDoctor(string url, int userId)

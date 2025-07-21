@@ -300,7 +300,7 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var doctors = _doctorService.GetAllDoctors();
+            var doctors =  await _doctorService.GetDoctorsAsync();
             var specialties = await _specialtyService.GetAllSpecialtiesAsync();
 
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
@@ -420,22 +420,23 @@ namespace HealthCareSystem.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDoctorsBySpecialty(int specialtyId)
         {
-            var doctors = _doctorService.GetBySpecialty(specialtyId);
+            // Gọi hàm async nếu có
+            var doctors = await _doctorService.GetBySpecialtyAsync(specialtyId);
+
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
             {
                 UserId = d.UserId,
-                FullName = d.User.FullName,
+                FullName = d.User?.FullName ?? "Unknown",
                 SpecialtyId = d.SpecialtyId,
-                SpecialtyName = d.Specialty?.Name,
+                SpecialtyName = d.Specialty?.Name ?? "Unknown",
                 Qualifications = d.Qualifications,
                 Experience = d.Experience,
                 Rating = d.Rating,
-                AvatarUrl = d.User.AvatarUrl
+                AvatarUrl = d.User?.AvatarUrl ?? "/images/default-doctor.png"
             }).ToList();
 
             return PartialView("_DoctorOptions", doctorViewModels);
         }
-
         [HttpGet]
         public async Task<IActionResult> GetAvailableTimeSlots(int doctorId, DateTime date)
         {
