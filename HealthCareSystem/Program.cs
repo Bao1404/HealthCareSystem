@@ -69,6 +69,15 @@ namespace HealthCareSystem
             builder.Services.AddScoped<GmailHelper>();
             builder.Services.AddScoped<PhotoService>();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
 
             builder.Services.AddSession();
             builder.Services.AddSignalR();
