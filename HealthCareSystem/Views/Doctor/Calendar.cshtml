@@ -17,13 +17,13 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">5</span>
             </button>
-            <div class="user-profile" onclick="window.location.href='doctor-profile.html'">
-                <img src="/placeholder.svg?height=32&width=32" alt="Doctor" class="user-avatar">
+            <a class="user-profile" asp-controller="Doctor" asp-action="Profile" style="text-decoration: none;">
+                <img src="@ViewBag.Doctor.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">Dr. Sarah Johnson</h6>
-                    <p>Cardiologist</p>
+                    <h6 id="">@ViewBag.Doctor.User.FullName</h6>
+                    <p>@ViewBag.Doctor.Specialty.Name</p>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 

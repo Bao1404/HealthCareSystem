@@ -4,6 +4,17 @@ let currentWeek = new Date()
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM Content Loaded - Initializing schedule")
     initializeSchedule()
+    loadScheduleGrid()
+    loadWorkingHours()
+    loadTimeOff()
+    setupEventListeners()
+})
+
+function initializeSchedule() {
+    document.getElementById("doctorName").innerText;
+    updateCurrentWeek()
+}
+
 
     // Test modal initialization
     const modalElement = document.getElementById("addTimeOffModal")
@@ -35,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.error("Modal element not found on page load")
     }
+
 
     // Test Bootstrap availability
     if (typeof bootstrap !== 'undefined') {

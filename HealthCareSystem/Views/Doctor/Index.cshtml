@@ -873,33 +873,42 @@
                     </div>
                     <div class="card-content">
                         <div class="quick-actions">
-                            <button class="action-item" onclick="window.location.href='@Url.Action("Patients", "Doctor")'">
+                            <a asp-action="Appointments" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="openNewAppointmentModal()">
+                                <div class="action-icon">
+                                    <i class="fas fa-calendar-plus" style="color: blue;"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h6>New Appointment</h6>
+                                    <p>Schedule patient visit</p>
+                                </div>
+                            </a>
+                            <a asp-action="Patients" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-patients.html'">
                                 <div class="action-icon green">
-                                    <i class="fas fa-user-plus"></i>
+                                    <i class="fas fa-user-plus" style="color: green;"></i>
                                 </div>
                                 <div class="action-content">
                                     <h6>View Patients</h6>
                                     <p>Manage patient records</p>
                                 </div>
-                            </button>
-                            <button class="action-item" onclick="window.location.href='@Url.Action("Messages", "Doctor")'">
+                            </a>
+                            <a asp-action="Messages" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-messages.html'">
                                 <div class="action-icon cyan">
-                                    <i class="fas fa-comments"></i>
+                                    <i class="fas fa-comments" style="color: cyan;"></i>
                                 </div>
                                 <div class="action-content">
                                     <h6>Messages</h6>
                                     <p>Check patient messages</p>
                                 </div>
-                            </button>
-                            <button class="action-item" onclick="window.location.href='@Url.Action("Schedule", "Doctor")'">
+                            </a>
+                            <a asp-action="Schedule" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-schedule.html'">
                                 <div class="action-icon yellow">
-                                    <i class="fas fa-clock"></i>
+                                    <i class="fas fa-clock" style="color: yellow;"></i>
                                 </div>
                                 <div class="action-content">
                                     <h6>Set Schedule</h6>
                                     <p>Manage availability</p>
                                 </div>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

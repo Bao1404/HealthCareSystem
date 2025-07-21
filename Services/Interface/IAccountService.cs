@@ -8,7 +8,7 @@ namespace Services.Interface
         IEnumerable<User> GetAllAccounts();
         User GetAccountById(int id);
         void AddAccount(User user);
-        void UpdateAccount(User user);
+        Task UpdateAccount(User user);
         void DeleteAccount(int id);
     }
 } 

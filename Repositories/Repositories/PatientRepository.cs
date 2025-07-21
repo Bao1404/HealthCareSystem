@@ -21,10 +21,10 @@ namespace Repositories.Repositories
             _context.Patients.Add(patient);
             _context.SaveChanges();
         }
-        public void Update(Patient patient)
+        public async Task Update(Patient patient)
         {
             _context.Patients.Update(patient);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
         public void Delete(int id)
         {
@@ -49,9 +49,7 @@ namespace Repositories.Repositories
         }
         public async Task<Patient?> GetByUserIdAsync(int userId)
         {
-            return await _context.Patients
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            return await _context.Patients.Include(p => p.User).Include(p => p.MedicalHistories).FirstOrDefaultAsync(p => p.UserId == userId);
         }
 
         public async Task<List<Patient>> GetAllPatientsAsync()
