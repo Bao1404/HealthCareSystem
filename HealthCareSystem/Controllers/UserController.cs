@@ -321,18 +321,17 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Messages()
+        public async Task<IActionResult> Messages()
         {
-            var patientId = HttpContext.Session.GetInt32("UserId");
-
-            if (patientId == null)
+            if (currentUser == null)
             {
-                return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
+                return RedirectToAction("Index", "Login"); 
             }
 
-            ViewData["PatientId"] = patientId; // nếu muốn gửi ra View
+            ViewData["PatientId"] = currentUser.Value; // nếu muốn gửi ra View
             ViewData["ActiveMenu"] = "Messages";
-            return View();
+            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+            return View(patient);
         }
         public async Task<IActionResult> ChatBox()
         {
