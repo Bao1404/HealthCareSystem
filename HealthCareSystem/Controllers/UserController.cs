@@ -378,8 +378,7 @@ namespace HealthCareSystem.Controllers
             var timeSlots = new List<TimeSlotViewModel>();
             var workingHours = new[]
             {
-                new TimeSpan(8, 0, 0),   // 8:00 AM
-                new TimeSpan(8, 30, 0),  // 8:30 AM
+  
                 new TimeSpan(9, 0, 0),   // 9:00 AM
                 new TimeSpan(9, 30, 0),  // 9:30 AM
                 new TimeSpan(10, 0, 0),  // 10:00 AM
@@ -392,8 +391,7 @@ namespace HealthCareSystem.Controllers
                 new TimeSpan(15, 30, 0), // 3:30 PM
                 new TimeSpan(16, 0, 0),  // 4:00 PM
                 new TimeSpan(16, 30, 0), // 4:30 PM
-                new TimeSpan(17, 0, 0),  // 5:00 PM
-                new TimeSpan(17, 30, 0)  // 5:30 PM
+
             };
 
             foreach (var time in workingHours)
@@ -424,8 +422,6 @@ namespace HealthCareSystem.Controllers
             var timeSlots = new List<TimeSlotViewModel>();
             var workingHours = new[]
             {
-                new TimeSpan(8, 0, 0),   // 8:00 AM
-                new TimeSpan(8, 30, 0),  // 8:30 AM
                 new TimeSpan(9, 0, 0),   // 9:00 AM
                 new TimeSpan(9, 30, 0),  // 9:30 AM
                 new TimeSpan(10, 0, 0),  // 10:00 AM
@@ -438,8 +434,6 @@ namespace HealthCareSystem.Controllers
                 new TimeSpan(15, 30, 0), // 3:30 PM
                 new TimeSpan(16, 0, 0),  // 4:00 PM
                 new TimeSpan(16, 30, 0), // 4:30 PM
-                new TimeSpan(17, 0, 0),  // 5:00 PM
-                new TimeSpan(17, 30, 0)  // 5:30 PM
             };
 
             foreach (var time in workingHours)
