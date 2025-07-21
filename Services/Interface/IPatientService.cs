@@ -22,5 +22,6 @@ namespace Services.Interface
         Task<List<Patient>> GetFollowUpPatientsAsync(int doctorId);
         Task<List<Patient>> GetNewPatientsAsync(int doctorId, int daysThreshold = 30);
         Task<List<Patient>> GetActivePatientsAsync(int doctorId);
+        Task UpdateImageUrlPatient(string url, int userId);
     }
 }
