@@ -93,6 +93,33 @@ function editSchedule() {
 }
 
 function changeAvatar() {
+    const input = document.createElement("input")
+    input.type = "file"
+    input.accept = "image/*"
+    input.onchange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                // Update avatar display
+                document.querySelector(".profile-avatar-xl").src = e.target.result
+                document.querySelector(".user-avatar").src = e.target.result
+
+                // Save to localStorage (in real app, upload to server)
+                localStorage.setItem("doctorAvatar", e.target.result)
+
+                // Upload avatar to server via AJAX
+                uploadAvatarToServer(file);
+
+                //showNotification("Avatar updated successfully!", "success")
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+    input.click()
+}
+
+function changeAvatar() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
@@ -128,7 +155,7 @@ function uploadAvatarToServer(file) {
 
     // Gọi AJAX để upload ảnh lên server
     $.ajax({
-        url: '/updateImageDoctor',  // Đường dẫn đến action trong Controller
+        url: '/updateImage',  // Đường dẫn đến action trong Controller
         type: 'POST',
         data: formData,
         processData: false,  // Không chuyển đổi dữ liệu (FormData)
@@ -146,6 +173,7 @@ function uploadAvatarToServer(file) {
         }
     });
 }
+
 
 function showNotification(message, type = "info") {
     const notification = document.createElement("div")
