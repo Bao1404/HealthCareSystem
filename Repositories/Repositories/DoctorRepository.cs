@@ -62,7 +62,7 @@ namespace Repositories.Repositories
         {
             try
             {
-                var doctor = await _context.Doctors.Include(d => d.User).Include(d => d.Specialty).Include(d => d.Appointments).FirstOrDefaultAsync(d => d.UserId == userId);
+                var doctor = await _context.Doctors.Include(d => d.User).FirstOrDefaultAsync(d => d.UserId == userId);
                 if (doctor != null)
                 {
                     doctor.User.AvatarUrl = url;
