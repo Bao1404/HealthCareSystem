@@ -18,10 +18,10 @@
                 <span class="notification-badge">5</span>
             </button>
             <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
-                <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
+                <img src="@ViewBag.Doctor.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">@Model.User.FullName</h6>
-                    <p>@Model.Specialty.Name</p>
+                    <h6 id="doctorName">@ViewBag.Doctor.User.FullName</h6>
+                    <p>@ViewBag.Doctor.Specialty.Name</p>
                 </div>
             </a>
         </div>
