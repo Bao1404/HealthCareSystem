@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.Models;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.IRepositories;
 using Services;
 using Services.Interface;
 using System.Threading.Tasks;
@@ -16,11 +17,13 @@ namespace HealthCareSystem.Controllers
         private readonly IAppointmentService _appointmentService;
         private readonly IPatientService _patientService;
         private readonly IMedicalHistoriesService _medicalHistoriesService;
+        private readonly IConversationRepository _conversationRepository;
 
         public UserController(IUserService userService, IDoctorService doctorService,
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
             IPatientService patientService,
-            IMedicalHistoriesService medicalHistoriesService)
+            IMedicalHistoriesService medicalHistoriesService,
+            IConversationRepository conversationRepository)
         {
             _userService = userService;
             _doctorService = doctorService;
@@ -28,6 +31,7 @@ namespace HealthCareSystem.Controllers
             _appointmentService = appointmentService;
             _patientService = patientService;
             _medicalHistoriesService = medicalHistoriesService;
+            _conversationRepository = conversationRepository;
         }
         public async Task<IActionResult> Index()
         {
@@ -321,7 +325,7 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Messages()
+        public IActionResult Messages(int conversationId)
         {
             var patientId = HttpContext.Session.GetInt32("UserId");
 
@@ -330,10 +334,19 @@ namespace HealthCareSystem.Controllers
                 return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
             }
 
-            ViewData["PatientId"] = patientId; // nếu muốn gửi ra View
+            var conversation = _conversationRepository.GetConversationById(conversationId); // Đảm bảo phương thức này tồn tại trong repository
+
+            if (conversation == null)
+            {
+                return RedirectToAction("Index", "Home"); // Hoặc hiển thị thông báo lỗi
+            }
+
+            ViewData["PatientId"] = patientId;
+            ViewData["ConversationId"] = conversationId; // Truyền conversationId ra view
             ViewData["ActiveMenu"] = "Messages";
             return View();
         }
+
         public async Task<IActionResult> ChatBox()
         {
             if(currentUser == null)

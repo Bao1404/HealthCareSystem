@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace Repositories.IRepositories
 {
@@ -11,5 +12,9 @@ namespace Repositories.IRepositories
         Task CreateConversation(Conversation conversation);
         Task UpdateConversation(Conversation conversation);
         Task DeleteConversation(int conversationId);
+        Task<Conversation> CreateAsync(Conversation conversation);
+        Task<Conversation> FindConversationByPatientIdAndDoctorId(int patientUserId, int doctorUserId);
+
+
     }
 }

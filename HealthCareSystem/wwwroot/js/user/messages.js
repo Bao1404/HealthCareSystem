@@ -98,20 +98,29 @@ function selectConversation(conversationId) {
 }
 
 async function loadMessagesFromApi(conversationId) {
-    const container = document.getElementById("chatMessages")
-    container.innerHTML = "<p>Loading...</p>"
+    const container = document.getElementById("chatMessages");
+    container.innerHTML = "<p>Loading...</p>";
 
     try {
-        setupSignalR(conversationId); console.log("🔄 Loading messages for conversation:", conversationId)
-        const res = await fetch(`/api/APIMessage/conversation/${conversationId}`)
-        if (!res.ok) throw new Error("Failed to load messages")
+        setupSignalR(conversationId);
+        console.log("🔄 Loading messages for conversation:", conversationId);
 
-        const messages = await res.json()
+        const res = await fetch(`/api/APIMessage/conversation/${conversationId}`);
+        if (!res.ok) throw new Error("Failed to load messages");
+
+        const messages = await res.json();
         container.innerHTML = messages.map((message) => {
-            const sender = message.sender || {}
-            const senderRole = sender.role || "Unknown"
-            const senderName = sender.fullName || "Unknown"
-            const senderAvatar = sender.avatarUrl || "/placeholder.svg?height=36&width=36"
+            const sender = message.sender || {};
+            const senderRole = sender.role || "Unknown";
+            const senderName = sender.fullName || "Unknown";
+            const senderAvatar = sender.avatarUrl || "/placeholder.svg?height=36&width=36";
+
+            let messageContent = message.content;  // Nội dung tin nhắn
+
+            // Nếu messageType là "image", thay thế nội dung bằng thẻ <img> với style trực tiếp
+            if (message.MessageType === "image") {
+                messageContent = `<img src="${message.content}" alt="Image" style="max-width: 100%; height: auto; border-radius: 5px; margin-top: 10px;" />`;
+            }
 
             return `
                 <div class="message ${senderRole === "Patient" ? "user-message" : "doctor-message"}">
@@ -123,19 +132,20 @@ async function loadMessagesFromApi(conversationId) {
                             <span class="message-sender">${senderRole === "Patient" ? "You" : senderName}</span>
                             <span class="message-time">${new Date(message.sentAt).toLocaleTimeString()}</span>
                         </div>
-                        <div class="message-text">${message.content}</div>
+                        <div class="message-text">${messageContent}</div>
                     </div>
                 </div>
-            `
-        }).join("")
+            `;
+        }).join("");
 
-        container.scrollTop = container.scrollHeight
+        container.scrollTop = container.scrollHeight;
     } catch (err) {
-        console.error("❌ Error loading messages:", err)
+        console.error("❌ Error loading messages:", err);
 
-        container.innerHTML = "<p>Failed to load messages.</p>"
+        container.innerHTML = "<p>Failed to load messages.</p>";
     }
 }
+
 
 function showChatInterface() {
     if (!currentConversation) return
@@ -157,50 +167,97 @@ async function sendMessage(event) {
 
     const input = document.getElementById("messageInput");
     const messageText = input.value.trim();
-    if (!messageText) return;
+
+    const fileInput = document.getElementById("fileInput");  // Lấy tệp ảnh
+    const file = fileInput.files[0];  // Lấy tệp đầu tiên (nếu có)
 
     const conversationId = currentConversation.conversationId;
-    const senderId = parseInt(localStorage.getItem("patientId")); // 👈 role: bệnh nhân
+    const senderId = parseInt(localStorage.getItem("patientId"));
     const receiverId = currentConversation.doctorUser?.userId;
-
-    console.log("👤 Sender (patient):", senderId);
-    console.log("📥 Receiver (doctor):", receiverId);
-    console.log("🧵 Conversation:", conversationId);
 
     if (!senderId || !receiverId || !conversationId) {
         console.error("❌ Missing senderId, receiverId, or conversationId");
         return;
     }
 
-    await setupSignalR(conversationId); // Khởi tạo kết nối SignalR nếu cần
+    let newMessage = {};
 
-    const newMessage = {
-        conversationId: conversationId,
-        senderId: senderId,
-        messageType: "text",
-        content: messageText
-    };
+    if (file) {
+        // Nếu có file ảnh, gọi API để gửi ảnh
+        const formData = new FormData();
+        formData.append("ConversationId", conversationId);
+        formData.append("SenderId", senderId);
+        formData.append("File", file);  // Gửi tệp ảnh
 
-    try {
-        const res = await fetch("/api/APIMessage/send", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newMessage)
-        });
+        try {
+            const res = await fetch("/api/APIMessage/send-image", {
+                method: "POST",
+                body: formData
+            });
 
-        if (!res.ok) throw new Error("Failed to send message");
+            if (!res.ok) throw new Error("Failed to send image");
 
-        // Gửi socket thông báo tới bên còn lại
-        await connection.invoke("SendMessage", conversationId.toString(), senderId.toString(), messageText);
+            const message = await res.json();
+            await connection.invoke("SendMessage", conversationId.toString(), senderId.toString(), message.Content);  // Gửi URL ảnh qua SignalR
 
-        // Xóa input & cập nhật UI
-        input.value = "";
-        await loadMessagesFromApi(conversationId);
+            // Cập nhật giao diện
+            loadMessagesFromApi(conversationId);
+        } catch (err) {
+            console.error("❌ Error sending image:", err);
+        }
+    } else if (messageText) {
+        // Nếu không có file ảnh, gửi tin nhắn văn bản
+        newMessage = {
+            conversationId: conversationId,
+            senderId: senderId,
+            messageType: "text",
+            content: messageText
+        };
 
-    } catch (err) {
-        console.error("❌ Error sending message:", err);
+        try {
+            const res = await fetch("/api/APIMessage/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newMessage)
+            });
+
+            if (!res.ok) throw new Error("Failed to send message");
+
+            await connection.invoke("SendMessage", conversationId.toString(), senderId.toString(), messageText);
+
+            input.value = "";
+            await loadMessagesFromApi(conversationId);
+        } catch (err) {
+            console.error("❌ Error sending message:", err);
+        }
+    }
+}
+
+
+function attachFile() {
+    const fileInput = document.getElementById("fileInput");
+    fileInput.click();  // Mở hộp thoại chọn tệp khi người dùng nhấn nút đính kèm
+}
+function previewFile() {
+    const fileInput = document.getElementById("fileInput");
+    const imagePreview = document.getElementById("imagePreview");
+    const previewImage = document.getElementById("previewImage");
+
+    const file = fileInput.files[0];  // Lấy tệp được chọn
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+            previewImage.src = event.target.result;  // Đọc dữ liệu và hiển thị ảnh
+            imagePreview.style.display = "block";  // Hiển thị ảnh preview
+        };
+
+        reader.readAsDataURL(file);  // Đọc file ảnh dưới dạng base64
+    } else {
+        imagePreview.style.display = "none";  // Ẩn ảnh nếu không có file
     }
 }
 
