@@ -314,6 +314,41 @@ body {
         background-color: var(--warning-color);
     }
 
+    .stat-icon.purple {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .stat-icon.orange {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+    }
+
+.chart-stats {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.stat-mini h6 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.stat-mini small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+}
+
+.chart-container canvas {
+    max-height: 100%;
+    width: 100% !important;
+}
+
 .stat-content h3 {
     font-size: 1.75rem;
     font-weight: 700;
@@ -5600,3 +5635,18 @@ input:checked + .slider {
             background-color: var(--card-background);
             border-bottom-color: var(--card-background);
         }
+
+
+/* Manual modal styles for fallback */
+.modal.show {
+    display: block !important;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+body.modal-open {
+    overflow: hidden;
+}

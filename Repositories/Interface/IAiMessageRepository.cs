@@ -12,5 +12,6 @@ namespace Repositories.Interface
         Task CreateMessage(Aimessage msg);
         Task<List<Aimessage>> GetMessagesByUserId(int userId);
         Task SaveMessage(Aimessage[] msg);
+        Task DeleteMessageByConversationId(int conversationId);
     }
 }

@@ -18,8 +18,10 @@ namespace HealthCareSystem.Controllers
         private readonly IPatientService _patientService;
         private readonly GmailHelper _gmailHelper;
         private readonly PhotoService _photoService;
+        private readonly ITimeOffService _timeOffService;
+
         private int? currentUser => HttpContext.Session.GetInt32("UserId");
-        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService)
+        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService, ITimeOffService timeOffService)
         {
             _doctorService = doctorService;
             _appointmentService = appointmentService;
@@ -27,17 +29,18 @@ namespace HealthCareSystem.Controllers
             _patientService = patientService;
             _gmailHelper = gmailHelper;
             _photoService = photoService;
+            _timeOffService = timeOffService;
         }
 
         public async Task<IActionResult> Index()
         {
+            ViewData["ActiveMenu"] = "Dashboard";
             if (currentUser == null)
             {
                 return RedirectToAction("Index", "Login");
             }
-            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
-            ViewData["ActiveMenu"] = "Dashboard";
-            return View(doctor);
+            var dashboardViewModel = await BuildDashboardViewModelAsync((int)currentUser);
+            return View(dashboardViewModel);
         }
         public async Task<IActionResult> Appointments()
         {
@@ -51,6 +54,7 @@ namespace HealthCareSystem.Controllers
                 return RedirectToAction("Index", "Login");
             }
             var user = await _userService.GetUserById(currentUser.Value);
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
 
             var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(user.UserId);
             var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(user.UserId);
@@ -65,7 +69,7 @@ namespace HealthCareSystem.Controllers
             ViewBag.CancelledAppointments = cancelledAppointments;
             ViewBag.PendingCount = pendingAppointments.Count;
 
-            return View();
+            return View(doctor);
         }
         public async Task<IActionResult> Patients()
         {
@@ -86,25 +90,28 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "Patients";
             return View(model);
         }
-        public async Task<IActionResult> Schedule()
+        public async Task<IActionResult> Schedule(DateTime? week)
         {
             if (currentUser == null)
             {
                 return RedirectToAction("Index", "Login");
             }
-            var user = await _userService.GetUserById(currentUser.Value);
-
+            ViewBag.Doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             ViewData["ActiveMenu"] = "Schedule";
-            return View(user);
-        }
-        public async Task<IActionResult> ProfileAsync(int id)
-        {
-            var doctor = await _doctorService.GetDoctorsByIdAsync(id);
 
-            if (doctor == null)
+            var currentWeek = week ?? DateTime.Now;
+
+            var scheduleViewModel = await BuildScheduleViewModelAsync(currentUser.Value, currentWeek);
+
+            return View(scheduleViewModel);
+        }
+        public async Task<IActionResult> ProfileAsync()
+        {
+            if(currentUser == null)
             {
-                return NotFound();
+                return RedirectToAction("Index", "Login");
             }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             return View(doctor);
         }
         public async Task<IActionResult> Calendar(int? year, int? month)
@@ -117,13 +124,19 @@ namespace HealthCareSystem.Controllers
                 : new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
             var calendarViewModel = await BuildCalendarViewModelAsync(doctorId, currentDate);
+            ViewBag.Doctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
 
             return View(calendarViewModel);
         }
-        public IActionResult Messages()
+        public async Task<IActionResult> Messages()
         {
             ViewData["ActiveMenu"] = "Messages";
-            return View();
+            if(currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
+            return View(doctor);
         }
 
         [HttpPost]
@@ -388,5 +401,457 @@ namespace HealthCareSystem.Controllers
                 return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddTimeOff([FromBody] TimeOffRequest request)
+        {
+            try
+            {
+                var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+
+                // Parse the request data
+                if (!DateOnly.TryParse(request.StartDate, out var startDate) ||
+                    !DateOnly.TryParse(request.EndDate, out var endDate))
+                {
+                    return Json(new { success = false, message = "Invalid date format." });
+                }
+
+                // Validate time off
+                if (startDate > endDate)
+                {
+                    return Json(new { success = false, message = "Start date must be before or equal to end date." });
+                }
+
+                // Check if time off already exists for this period
+                var exists = await _timeOffService.IsTimeOffExistsAsync(doctorId, startDate, endDate);
+                if (exists)
+                {
+                    return Json(new { success = false, message = "Time off already exists for this period." });
+                }
+
+                // Create new time off
+                var timeOff = new BusinessObjects.TimeOff
+                {
+                    DoctorUserId = doctorId,
+                    Type = request.Type,
+                    Title = request.Title,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    IsAllDay = request.IsAllDay,
+                    Reason = request.Reason
+                };
+
+                var result = await _timeOffService.AddTimeOffAsync(timeOff);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Time off added successfully!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Failed to add time off." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while adding time off." });
+            }
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetWeeklySchedule(DateTime week)
+        {
+            try
+            {
+                var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                var scheduleViewModel = await BuildScheduleViewModelAsync(doctorId, week);
+
+                return Json(new
+                {
+                    success = true,
+                    weeklySchedule = scheduleViewModel.WeeklySchedule,
+                    currentWeekDisplay = scheduleViewModel.CurrentWeekDisplay
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error loading weekly schedule." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTimeOff(int id)
+        {
+            try
+            {
+                var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                var timeOff = await _timeOffService.GetTimeOffByIdAsync(id);
+
+                if (timeOff == null || timeOff.DoctorUserId != doctorId)
+                {
+                    return Json(new { success = false, message = "Time off not found or unauthorized." });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    timeOff = new
+                    {
+                        timeOffId = timeOff.TimeOffId,
+                        type = timeOff.Type,
+                        title = timeOff.Title,
+                        startDate = timeOff.StartDate.ToString("yyyy-MM-dd"),
+                        endDate = timeOff.EndDate.ToString("yyyy-MM-dd"),
+                        isAllDay = timeOff.IsAllDay,
+                        reason = timeOff.Reason
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error retrieving time off information." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateTimeOff([FromBody] TimeOffRequest request)
+        {
+            try
+            {
+                var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+
+                // Parse the request data
+                if (!DateOnly.TryParse(request.StartDate, out var startDate) ||
+                    !DateOnly.TryParse(request.EndDate, out var endDate))
+                {
+                    return Json(new { success = false, message = "Invalid date format." });
+                }
+
+                // Validate time off
+                if (startDate > endDate)
+                {
+                    return Json(new { success = false, message = "Start date must be before or equal to end date." });
+                }
+
+                // Get existing time off
+                var existingTimeOff = await _timeOffService.GetTimeOffByIdAsync(request.TimeOffId);
+                if (existingTimeOff == null || existingTimeOff.DoctorUserId != doctorId)
+                {
+                    return Json(new { success = false, message = "Time off not found or unauthorized." });
+                }
+
+                // Check if time off already exists for this period (excluding current)
+                var exists = await _timeOffService.IsTimeOffExistsAsync(doctorId, startDate, endDate, request.TimeOffId);
+                if (exists)
+                {
+                    return Json(new { success = false, message = "Time off already exists for this period." });
+                }
+
+                // Update time off
+                existingTimeOff.Type = request.Type;
+                existingTimeOff.Title = request.Title;
+                existingTimeOff.StartDate = startDate;
+                existingTimeOff.EndDate = endDate;
+                existingTimeOff.IsAllDay = request.IsAllDay;
+                existingTimeOff.Reason = request.Reason;
+
+                var result = await _timeOffService.UpdateTimeOffAsync(existingTimeOff);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Time off updated successfully!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Failed to update time off." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while updating time off." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteTimeOff(int id)
+        {
+            try
+            {
+                var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                var timeOff = await _timeOffService.GetTimeOffByIdAsync(id);
+
+                if (timeOff == null || timeOff.DoctorUserId != doctorId)
+                {
+                    return Json(new { success = false, message = "Time off not found or unauthorized." });
+                }
+
+                var result = await _timeOffService.DeleteTimeOffAsync(id);
+
+                if (result)
+                {
+                    return Json(new { success = true, message = "Time off deleted successfully!" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Failed to delete time off." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while deleting time off." });
+            }
+        }
+        private string GetTimeOffIcon(string type)
+        {
+            return type.ToLower() switch
+            {
+                "vacation" => "plane",
+                "sick" => "thermometer-half",
+                "conference" => "graduation-cap",
+                "personal" => "user",
+                "holiday" => "gift",
+                _ => "calendar-times"
+            };
+        }
+        private async Task<ScheduleViewModel> BuildScheduleViewModelAsync(int doctorId, DateTime currentWeek)
+        {
+            // Get start and end of week
+            var startOfWeek = currentWeek.AddDays(-(int)currentWeek.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            // Get appointments for the week
+            var weekAppointments = await _appointmentService.GetAppointmentsByWeekAsync(doctorId, startOfWeek);
+
+            // Build weekly schedule
+            var weeklySchedule = new List<WeeklyScheduleDay>();
+            for (int i = 0; i < 7; i++)
+            {
+                var currentDate = startOfWeek.AddDays(i);
+                var dayAppointments = weekAppointments
+                    .Where(a => a.AppointmentDateTime.Date == currentDate.Date)
+                    .ToList();
+
+                var daySchedule = new WeeklyScheduleDay
+                {
+                    DayName = currentDate.ToString("dddd"),
+                    Date = currentDate,
+                    IsToday = currentDate.Date == DateTime.Today,
+                    Appointments = MapToScheduleAppointments(dayAppointments),
+                    AvailableSlots = GenerateAvailableSlots(currentDate, dayAppointments)
+                };
+
+                weeklySchedule.Add(daySchedule);
+            }
+
+            // Get time off list from database
+            var timeOffs = await _timeOffService.GetTimeOffsByDoctorAsync(doctorId);
+            var timeOffList = timeOffs.Select(t => new TimeOffItem
+            {
+                TimeOffId = t.TimeOffId,
+                Type = t.Type,
+                Title = t.Title,
+                StartDate = t.StartDate.ToDateTime(TimeOnly.MinValue),
+                EndDate = t.EndDate.ToDateTime(TimeOnly.MinValue),
+                IsAllDay = t.IsAllDay ?? true,
+                Reason = t.Reason ?? "",
+                DateRangeDisplay = $"{t.StartDate:MMM dd} - {t.EndDate:MMM dd}, {t.StartDate:yyyy}",
+                Icon = GetTimeOffIcon(t.Type)
+            }).ToList();
+
+            return new ScheduleViewModel
+            {
+                DoctorId = doctorId,
+                CurrentWeek = currentWeek,
+                CurrentWeekDisplay = $"{startOfWeek:MMM dd} - {endOfWeek:MMM dd}, {currentWeek:yyyy}",
+                WeeklySchedule = weeklySchedule,
+                TimeOffList = timeOffList
+            };
+        }
+
+        private List<ScheduleAppointment> MapToScheduleAppointments(List<Appointment> appointments)
+        {
+            return appointments.Select(a => new ScheduleAppointment
+            {
+                AppointmentId = a.AppointmentId,
+                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
+                PatientEmail = a.PatientUser?.User?.Email ?? "",
+                PatientPhone = a.PatientUser?.User?.PhoneNumber ?? "",
+                AppointmentDateTime = a.AppointmentDateTime,
+                Status = a.Status ?? "Unknown",
+                Notes = a.Notes ?? "",
+                AppointmentType = GetAppointmentType(a.Notes),
+                StatusColor = GetStatusColor(a.Status),
+                TimeDisplay = a.AppointmentDateTime.ToString("HH:mm"),
+                Duration = "30 min"
+            }).ToList();
+        }
+
+        private List<TimeSlot> GenerateAvailableSlots(DateTime date, List<Appointment> appointments)
+        {
+            var slots = new List<TimeSlot>();
+            var startTime = new TimeSpan(9, 0, 0); // 9:00 AM
+            var endTime = new TimeSpan(17, 00, 0); // 5:00 PM
+            var slotDuration = new TimeSpan(0, 30, 0); // 30 minutes
+
+            for (var time = startTime; time < endTime; time += slotDuration)
+            {
+                var slotEndTime = time + slotDuration;
+                var isAvailable = !appointments.Any(a =>
+                    a.AppointmentDateTime.TimeOfDay >= time &&
+                    a.AppointmentDateTime.TimeOfDay < slotEndTime);
+
+                slots.Add(new TimeSlot
+                {
+                    TimeSlotId = slots.Count + 1,
+                    Date = date,
+                    StartTime = time,
+                    EndTime = slotEndTime,
+                    SlotType = "regular",
+                    Notes = "",
+                    IsAvailable = isAvailable,
+                    TimeDisplay = $"{time:hh\\:mm} - {slotEndTime:hh\\:mm}",
+                    DayName = date.ToString("dddd")
+                });
+            }
+
+            return slots;
+        }
+
+        private async Task<DoctorDashboardViewModel> BuildDashboardViewModelAsync(int doctorId)
+        {
+            // Get current doctor information
+            var currentDoctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
+
+            // Get appointments data
+            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
+            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(doctorId);
+            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(doctorId);
+
+            // Get patients data
+            var allPatients = await _patientService.GetPatientsByDoctorAsync(doctorId);
+            var newPatients = await _patientService.GetNewPatientsAsync(doctorId, 30);
+            var followUpPatients = await _patientService.GetFollowUpPatientsAsync(doctorId);
+
+            // Get weekly stats
+            var weekStart = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
+            var weeklyAppointments = await _appointmentService.GetAppointmentsByWeekAsync(doctorId, weekStart);
+
+            // Build dashboard stats
+            var stats = new DoctorDashboardStats
+            {
+                TodayAppointmentCount = todayAppointments.Count,
+                TotalPatientCount = allPatients.Count,
+                UnreadMessageCount = 12, // TODO: Implement message service
+                AverageRating = currentDoctor?.Rating ?? 4.9m,
+                NewPatientCount = newPatients.Count,
+                CompletedVisitCount = completedAppointments.Count,
+                PendingReviewCount = pendingAppointments.Count(a => a.Notes?.ToLower().Contains("review") == true),
+                FollowUpCount = followUpPatients.Count
+            };
+
+            // Build weekly stats
+            var weeklyStats = new WeeklyStats
+            {
+                WeeklyAppointmentCount = weeklyAppointments.Count,
+                WeeklyNewPatientCount = newPatients.Count(p => p.CreatedAt >= weekStart),
+                WeeklyFollowUpCount = weeklyAppointments.Count(a => a.Notes?.ToLower().Contains("follow") == true)
+            };
+
+            // Map today's schedule
+            var todaySchedule = todayAppointments.Select(a => new AppointmentViewModel
+            {
+                AppointmentId = a.AppointmentId,
+                AppointmentDateTime = a.AppointmentDateTime,
+                Status = a.Status ?? "Unknown",
+                Notes = a.Notes ?? "",
+                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
+                DoctorName = a.DoctorUser?.User?.FullName ?? "Unknown Doctor",
+                SpecialtyName = a.DoctorUser?.Specialty?.Name ?? "General",
+                DoctorAvatarUrl = a.PatientUser?.User?.AvatarUrl ?? "/images/default-patient.png",
+                CreatedAt = a.CreatedAt ?? DateTime.Now
+            }).ToList();
+
+            // Get recent patients (last 5 who had appointments)
+            var recentPatients = allPatients
+                .Where(p => p.Appointments.Any())
+                .OrderByDescending(p => p.Appointments.Max(a => a.AppointmentDateTime))
+                .Take(5)
+                //.Select(p => MapToPatientInfo(p))
+                .ToList();
+
+            // Build urgent notifications (mock data for now)
+            var urgentNotifications = BuildUrgentNotifications(pendingAppointments, followUpPatients);
+
+            // Map pending appointments
+            var mappedPendingAppointments = pendingAppointments.Select(a => new AppointmentViewModel
+            {
+                AppointmentId = a.AppointmentId,
+                AppointmentDateTime = a.AppointmentDateTime,
+                Status = a.Status ?? "Unknown",
+                Notes = a.Notes ?? "",
+                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
+                DoctorName = a.DoctorUser?.User?.FullName ?? "Unknown Doctor",
+                SpecialtyName = a.DoctorUser?.Specialty?.Name ?? "General",
+                DoctorAvatarUrl = a.PatientUser?.User?.AvatarUrl ?? "/images/default-patient.png",
+                CreatedAt = a.CreatedAt ?? DateTime.Now
+            }).ToList();
+
+            return new DoctorDashboardViewModel
+            {
+                CurrentDoctor = currentDoctor ?? new Doctor(),
+                Stats = stats,
+                TodaySchedule = todaySchedule,
+                //RecentPatients = recentPatients,
+                UrgentNotifications = urgentNotifications,
+                WeeklyStats = weeklyStats,
+                PendingAppointments = mappedPendingAppointments
+            };
+        }
+
+        private List<NotificationItem> BuildUrgentNotifications(List<Appointment> pendingAppointments, List<Patient> followUpPatients)
+        {
+            var notifications = new List<NotificationItem>();
+
+            // Add pending appointment notifications
+            foreach (var appointment in pendingAppointments.Take(3))
+            {
+                notifications.Add(new NotificationItem
+                {
+                    Id = appointment.AppointmentId,
+                    Type = "appointment",
+                    Title = "New Appointment Request",
+                    Message = $"{appointment.PatientUser?.User?.FullName} requests appointment on {appointment.AppointmentDateTime:MMM dd, HH:mm}",
+                    CreatedAt = appointment.CreatedAt ?? DateTime.Now,
+                    IsRead = false,
+                    Icon = "fas fa-calendar-plus",
+                    Color = "primary"
+                });
+            }
+
+            // Add follow-up notifications
+            foreach (var patient in followUpPatients.Take(2))
+            {
+                var lastAppointment = patient.Appointments.OrderByDescending(a => a.AppointmentDateTime).FirstOrDefault();
+                if (lastAppointment != null)
+                {
+                    notifications.Add(new NotificationItem
+                    {
+                        Id = patient.UserId,
+                        Type = "follow-up",
+                        Title = "Follow-up Required",
+                        Message = $"{patient.User.FullName} needs follow-up appointment",
+                        CreatedAt = lastAppointment.AppointmentDateTime.AddDays(7),
+                        IsRead = false,
+                        Icon = "fas fa-user-clock",
+                        Color = "warning"
+                    });
+                }
+            }
+
+            return notifications.OrderByDescending(n => n.CreatedAt).ToList();
+        }
+
     }
 }

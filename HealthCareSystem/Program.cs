@@ -46,7 +46,9 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAiConversationRepository, AiConversationRepository>();
             builder.Services.AddScoped<IAiConversationService, AiConversationService>();
             builder.Services.AddScoped<IAiMessageService, AiMessageService>();
-
+            builder.Services.AddScoped<IMedicalHistoriesService, MedicalHistoriesService>();
+            builder.Services.AddScoped<IMedicalHistoriesRepository, MedicalHistoriesRepository>();
+            builder.Services.AddScoped<ITimeOffRepository, TimeOffRepository>();
             // Register repositories and services
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
@@ -62,6 +64,7 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+            builder.Services.AddScoped<ITimeOffService, TimeOffService>();
 
             builder.Services.AddScoped<GmailHelper>();
             builder.Services.AddScoped<PhotoService>();

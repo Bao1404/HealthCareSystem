@@ -1,4 +1,6 @@
-﻿public class ConversationDto
+﻿using HealthCareSystem.Controllers.dto;
+
+public class ConversationDto
 {
     public int ConversationId { get; set; }
     public int PatientUserId { get; set; }

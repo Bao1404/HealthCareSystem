@@ -213,5 +213,22 @@ namespace Repositories.Repositories
                 .OrderBy(a => a.AppointmentDateTime)
                 .ToListAsync();
         }
+
+        public async Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date)
+        {
+            return await _context.Appointments
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+                .Include(a => a.DoctorUser)
+                    .ThenInclude(d => d.Specialty)
+                .Include(a => a.PatientUser)
+                    .ThenInclude(p => p.User)
+                .Where(a => a.DoctorUserId == doctorId
+                        && a.AppointmentDateTime.Date == date.Date
+                        && a.Status != "Cancelled")
+                .OrderBy(a => a.AppointmentDateTime)
+                .ToListAsync();
+        }
+
     }
 }

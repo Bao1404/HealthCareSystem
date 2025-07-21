@@ -15,16 +15,19 @@ namespace HealthCareSystem.Controllers
         private readonly ISpecialtyService _specialtyService;
         private readonly IAppointmentService _appointmentService;
         private readonly IPatientService _patientService;
+        private readonly IMedicalHistoriesService _medicalHistoriesService;
 
         public UserController(IUserService userService, IDoctorService doctorService,
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
-            IPatientService patientService)
+            IPatientService patientService,
+            IMedicalHistoriesService medicalHistoriesService)
         {
             _userService = userService;
             _doctorService = doctorService;
             _specialtyService = specialtyService;
             _appointmentService = appointmentService;
             _patientService = patientService;
+            _medicalHistoriesService = medicalHistoriesService;
         }
         public async Task<IActionResult> Index()
         {
@@ -293,7 +296,7 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var doctors = await _doctorService.GetDoctorsAsync();
+            var doctors = _doctorService.GetAllDoctors();
             var specialties = await _specialtyService.GetAllSpecialtiesAsync();
 
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
@@ -348,15 +351,72 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-            var user = await _userService.GetUserById(currentUser.Value);
-            return View(user);
+            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+            ViewBag.MedicalHistory = await _medicalHistoriesService.GetHistoryByUserId(currentUser.Value);
+            return View(patient);
         }
+        [HttpPost("Edit")]
+        public async Task<IActionResult> UpdateProfile()
+        {
+            var userId = Request.Form["userId"];
+            var email = Request.Form["email"];
+            var fullName = Request.Form["fullName"];
+            var phoneNumber = Request.Form["phone"];
+            var dateOfBirth = Request.Form["dob"];
+            var address = Request.Form["address"];
+            var gender = Request.Form["gender"];
+            var emergencyPhoneNumber = Request.Form["ePhone"];
 
+            var user = await _userService.GetUserById(int.Parse(userId));
+
+            user.Email = email;
+            user.FullName = fullName;
+            user.PhoneNumber = phoneNumber;
+            user.UpdatedAt = DateTime.Now;
+
+            await _userService.UpdateUser(user);
+
+            var patient = await _patientService.GetByUserIdAsync(int.Parse(userId));
+
+            patient.Address = address;
+            patient.DateOfBirth = DateOnly.Parse(dateOfBirth);
+            patient.Gender = gender;
+            patient.EmergencyPhoneNumber = emergencyPhoneNumber;
+            patient.UpdatedAt = DateTime.Now;
+
+            await _patientService.UpdatePatient(patient);
+
+            return RedirectToAction("Profile", "User");
+
+        }
+        [HttpPost("Health")]
+        public async Task<IActionResult> UpdateHealthProfile()
+        {
+            var useId = Request.Form["userId"];
+            var height = Request.Form["height"];
+            var weight = Request.Form["weight"];
+            var bloodType = Request.Form["blood"];
+            var allergies = Request.Form["allergy"];
+            var heightM = double.Parse(height) / 100.0;
+            double bmi = double.Parse(weight) / (heightM * heightM);
+
+            var patient = await _patientService.GetByUserIdAsync(int.Parse(useId));
+            patient.Height = int.Parse(height);
+            patient.Weight = int.Parse(weight);
+            patient.BloodType = bloodType;
+            patient.Allergies = allergies;
+            patient.Bmi = (decimal)bmi;
+            patient.UpdatedAt = DateTime.Now;
+
+            await _patientService.UpdatePatient(patient);
+
+            return RedirectToAction("Profile", "User");
+        }
         // API Methods for AJAX calls
         [HttpGet]
         public async Task<IActionResult> GetDoctorsBySpecialty(int specialtyId)
         {
-            var doctors = await _doctorService.GetBySpecialtyAsync(specialtyId);
+            var doctors = _doctorService.GetBySpecialty(specialtyId);
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
             {
                 UserId = d.UserId,
@@ -378,8 +438,7 @@ namespace HealthCareSystem.Controllers
             var timeSlots = new List<TimeSlotViewModel>();
             var workingHours = new[]
             {
-                new TimeSpan(8, 0, 0),   // 8:00 AM
-                new TimeSpan(8, 30, 0),  // 8:30 AM
+  
                 new TimeSpan(9, 0, 0),   // 9:00 AM
                 new TimeSpan(9, 30, 0),  // 9:30 AM
                 new TimeSpan(10, 0, 0),  // 10:00 AM
@@ -392,8 +451,7 @@ namespace HealthCareSystem.Controllers
                 new TimeSpan(15, 30, 0), // 3:30 PM
                 new TimeSpan(16, 0, 0),  // 4:00 PM
                 new TimeSpan(16, 30, 0), // 4:30 PM
-                new TimeSpan(17, 0, 0),  // 5:00 PM
-                new TimeSpan(17, 30, 0)  // 5:30 PM
+
             };
 
             foreach (var time in workingHours)
@@ -424,8 +482,6 @@ namespace HealthCareSystem.Controllers
             var timeSlots = new List<TimeSlotViewModel>();
             var workingHours = new[]
             {
-                new TimeSpan(8, 0, 0),   // 8:00 AM
-                new TimeSpan(8, 30, 0),  // 8:30 AM
                 new TimeSpan(9, 0, 0),   // 9:00 AM
                 new TimeSpan(9, 30, 0),  // 9:30 AM
                 new TimeSpan(10, 0, 0),  // 10:00 AM
@@ -438,8 +494,6 @@ namespace HealthCareSystem.Controllers
                 new TimeSpan(15, 30, 0), // 3:30 PM
                 new TimeSpan(16, 0, 0),  // 4:00 PM
                 new TimeSpan(16, 30, 0), // 4:30 PM
-                new TimeSpan(17, 0, 0),  // 5:00 PM
-                new TimeSpan(17, 30, 0)  // 5:30 PM
             };
 
             foreach (var time in workingHours)
@@ -485,7 +539,10 @@ namespace HealthCareSystem.Controllers
             try
             {
                 // Validate that current user exists as a patient
-                var patient = await _patientService.GetByUserIdAsync(currentUserId.Value);
+                // Remove or comment out the following usages:
+                // var patient = await _patientService.GetByUserIdAsync(currentUserId.Value);
+                // If you need this feature, implement a synchronous version in the service and repository, otherwise remove the related usages.
+                var patient = _patientService.GetByUserId(currentUserId.Value);
                 if (patient == null)
                 {
                     TempData["Error"] = "Patient record not found. Please contact support.";
@@ -496,7 +553,7 @@ namespace HealthCareSystem.Controllers
                 Doctor doctor = null;
                 try
                 {
-                    doctor = await _doctorService.GetDoctorsByIdAsync(model.DoctorUserId);
+                    doctor = _doctorService.GetDoctorById(model.DoctorUserId);
                 }
                 catch (Exception)
                 {
