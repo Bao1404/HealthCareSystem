@@ -64,7 +64,7 @@
                                     }
                                 </div>
                                 <div class="doctor-actions">
-                                    <button class="btn btn-sm btn-primary" onclick="bookWithDoctor(@doctor.UserId)">
+                                    <button class="btn btn-sm btn-primary" onclick="bookWithDoctor(@doctor.UserId, @doctor.SpecialtyId)">
                                         Đặt lịch
                                     </button>
                                 </div>
@@ -145,9 +145,9 @@
         }
     });
 
-    function bookWithDoctor(doctorId) {
+    function bookWithDoctor(doctorId, specialtyId) {
         // Redirect to appointments page with pre-selected doctor
-        window.location.href = `/User/Appointments?doctorId=${doctorId}`;
+        window.location.href = `/User/Appointments?doctorId=${doctorId}&specialtyId=${specialtyId}`;
     }
 </script>
 
