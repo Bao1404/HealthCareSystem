@@ -5635,3 +5635,18 @@ input:checked + .slider {
             background-color: var(--card-background);
             border-bottom-color: var(--card-background);
         }
+
+
+/* Manual modal styles for fallback */
+.modal.show {
+    display: block !important;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+body.modal-open {
+    overflow: hidden;
+}

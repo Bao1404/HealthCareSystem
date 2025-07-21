@@ -905,7 +905,7 @@ namespace HealthCareSystem.Controllers
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 Role = user.Role ?? "",
-                IsActive = user.IsActive,
+                IsActive = (bool)user.IsActive,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
                 AvatarUrl = user.AvatarUrl
