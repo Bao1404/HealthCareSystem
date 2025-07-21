@@ -1,5 +1,6 @@
-﻿using BusinessObjects;
+using BusinessObjects;
 using HealthCareSystem.Models;
+using HealthCareSystem.Helper;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using Repositories.Interface;
@@ -8,7 +9,8 @@ using Repositories.Repositories;
 using Services;
 using Services.Interface;
 using Services.Service;
-using Services;
+using HealthCareSystem.Service;
+
 namespace HealthCareSystem
 {
     public class Program
@@ -24,6 +26,17 @@ namespace HealthCareSystem
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
+            builder.Services.Configure<GmailApiOption>(builder.Configuration.GetSection("gmailApi"));
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+            builder.Services.AddSingleton(x =>
+            {
+                var config = builder.Configuration.GetSection("CloudinarySettings").Get<CloudinarySettings>();
+                var account = new CloudinaryDotNet.Account(config.CloudName, config.ApiKey, config.ApiSecret);
+                return new CloudinaryDotNet.Cloudinary(account);
+            });
+
+
             builder.Services.AddHttpClient();
 
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -33,7 +46,9 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAiConversationRepository, AiConversationRepository>();
             builder.Services.AddScoped<IAiConversationService, AiConversationService>();
             builder.Services.AddScoped<IAiMessageService, AiMessageService>();
-
+            builder.Services.AddScoped<IMedicalHistoriesService, MedicalHistoriesService>();
+            builder.Services.AddScoped<IMedicalHistoriesRepository, MedicalHistoriesRepository>();
+            builder.Services.AddScoped<ITimeOffRepository, TimeOffRepository>();
             // Register repositories and services
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IPatientService, PatientService>();
@@ -49,19 +64,15 @@ namespace HealthCareSystem
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<ISpecialtyService, SpecialtyService>();
             builder.Services.AddScoped<ISpecialtyRepository, SpecialtyRepository>();
+            builder.Services.AddScoped<ITimeOffService, TimeOffService>();
+
+            builder.Services.AddScoped<GmailHelper>();
+            builder.Services.AddScoped<PhotoService>();
+
+
             builder.Services.AddSession();
             builder.Services.AddSignalR();
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", builder =>
-                {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                });
-            });
 
-            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -78,7 +89,7 @@ namespace HealthCareSystem
 
             app.UseAuthorization();
             app.UseSession();
-            app.UseCors("AllowAll");
+
             // Map endpoints (must be after UseRouting)
             app.UseEndpoints(endpoints =>
             {
@@ -89,7 +100,6 @@ namespace HealthCareSystem
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-
 
             app.Run();
         }

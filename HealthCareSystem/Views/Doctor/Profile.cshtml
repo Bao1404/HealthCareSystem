@@ -18,14 +18,14 @@
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">5</span>
             </button>
-            <div class="user-profile">
-                <img src="@Html.DisplayFor(Model => Model.User.AvatarUrl)" alt="Doctor" class="user-avatar">
+            <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
+                <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="doctorName">
+                    <h6 id="">
                         @Html.DisplayFor(model => model.User.FullName)
                      </h6>
                 </div>
-            </div>
+            </a>
         </div>
     </header>
 
@@ -35,7 +35,7 @@
             <!-- Professional Information -->
             <div class="dashboard-card">
                 <div class="card-header-modern">
-                    <h5>Professional Information</h5>
+                    <h5>Personal Information</h5>
                     <button class="edit-profile-btn" onclick="editProfessionalInfo()">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -50,7 +50,7 @@
                                 </button>
                             </div>
                             <div class="profile-basic-info">
-                                <h4 id="doctorName">
+                                <h4 id="">
                                     @Html.DisplayFor(model => model.User.FullName)
                                 </h4>
                                 <p id="doctorBio">

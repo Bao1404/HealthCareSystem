@@ -11,216 +11,98 @@ document.addEventListener("DOMContentLoaded", () => {
     setupSearch()
 })
 
-function loadUsers() {
-    // Sample users data
-    users = [
-        {
-            id: 1,
-            firstName: "John",
-            lastName: "Doe",
-            email: "john.doe@email.com",
-            phone: "+1 (555) 123-4567",
-            role: "patient",
-            status: "active",
-            registrationDate: "2024-01-15",
-            lastLogin: "2024-01-20 14:30",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 2,
-            firstName: "Dr. Sarah",
-            lastName: "Johnson",
-            email: "sarah.johnson@hospital.com",
-            phone: "+1 (555) 234-5678",
-            role: "doctor",
-            status: "active",
-            registrationDate: "2024-01-10",
-            lastLogin: "2024-01-20 16:45",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 3,
-            firstName: "Jane",
-            lastName: "Smith",
-            email: "jane.smith@email.com",
-            phone: "+1 (555) 345-6789",
-            role: "patient",
-            status: "pending",
-            registrationDate: "2024-01-18",
-            lastLogin: "Never",
-            verified: false,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 4,
-            firstName: "Dr. Michael",
-            lastName: "Chen",
-            email: "michael.chen@hospital.com",
-            phone: "+1 (555) 456-7890",
-            role: "doctor",
-            status: "active",
-            registrationDate: "2024-01-12",
-            lastLogin: "2024-01-20 09:15",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 5,
-            firstName: "Admin",
-            lastName: "User",
-            email: "admin@healthcare.com",
-            phone: "+1 (555) 567-8901",
-            role: "admin",
-            status: "active",
-            registrationDate: "2024-01-01",
-            lastLogin: "2024-01-20 17:00",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 6,
-            firstName: "Emily",
-            lastName: "Davis",
-            email: "emily.davis@email.com",
-            phone: "+1 (555) 678-9012",
-            role: "patient",
-            status: "suspended",
-            registrationDate: "2024-01-08",
-            lastLogin: "2024-01-15 11:20",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 7,
-            firstName: "Nurse",
-            lastName: "Wilson",
-            email: "nurse.wilson@hospital.com",
-            phone: "+1 (555) 789-0123",
-            role: "staff",
-            status: "active",
-            registrationDate: "2024-01-14",
-            lastLogin: "2024-01-20 13:45",
-            verified: true,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-        {
-            id: 8,
-            firstName: "Robert",
-            lastName: "Brown",
-            email: "robert.brown@email.com",
-            phone: "+1 (555) 890-1234",
-            role: "patient",
-            status: "inactive",
-            registrationDate: "2024-01-05",
-            lastLogin: "2024-01-10 08:30",
-            verified: false,
-            avatar: "/placeholder.svg?height=40&width=40",
-        },
-    ]
-
-    filteredUsers = [...users]
-    renderUsers()
-    renderPagination()
+async function loadUsers() {
+    try {
+        const response = await fetch('/Admin/GetUsers?' + new URLSearchParams({
+            page: currentPage,
+            pageSize: usersPerPage
+        }))
+        
+        if (response.ok) {
+            const data = await response.json()
+            users = data.users
+            filteredUsers = [...users]
+            renderUsers()
+            renderPagination(data.totalPages, data.totalCount)
+        } else {
+            console.error('Failed to load users')
+        }
+    } catch (error) {
+        console.error('Error loading users:', error)
+    }
 }
 
 function setupSearch() {
     const searchInput = document.getElementById("searchInput")
-    searchInput.addEventListener("input", (e) => {
-        const searchTerm = e.target.value.toLowerCase()
-        filteredUsers = users.filter(
-            (user) =>
-                user.firstName.toLowerCase().includes(searchTerm) ||
-                user.lastName.toLowerCase().includes(searchTerm) ||
-                user.email.toLowerCase().includes(searchTerm) ||
-                user.role.toLowerCase().includes(searchTerm),
-        )
-        currentPage = 1
-        renderUsers()
-        renderPagination()
-    })
+    searchInput.addEventListener("input", debounce(async (e) => {
+        const searchTerm = e.target.value
+        await applyFilters()
+    }, 300))
 }
 
-function applyFilters() {
+async function applyFilters() {
+    const searchTerm = document.getElementById("searchInput").value
     const roleFilter = document.getElementById("roleFilter").value
     const statusFilter = document.getElementById("statusFilter").value
     const dateFilter = document.getElementById("dateFilter").value
-    const verificationFilter = document.getElementById("verificationFilter").value
 
-    filteredUsers = users.filter((user) => {
-        let matches = true
-
-        if (roleFilter && user.role !== roleFilter) matches = false
-        if (statusFilter && user.status !== statusFilter) matches = false
-        if (verificationFilter) {
-            if (verificationFilter === "verified" && !user.verified) matches = false
-            if (verificationFilter === "unverified" && user.verified) matches = false
-        }
-
-        // Date filtering logic would go here
-        if (dateFilter) {
-            const userDate = new Date(user.registrationDate)
-            const now = new Date()
-
-            switch (dateFilter) {
-                case "today":
-                    matches = matches && userDate.toDateString() === now.toDateString()
-                    break
-                case "week":
-                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-                    matches = matches && userDate >= weekAgo
-                    break
-                case "month":
-                    matches = matches && userDate.getMonth() === now.getMonth() && userDate.getFullYear() === now.getFullYear()
-                    break
-                case "year":
-                    matches = matches && userDate.getFullYear() === now.getFullYear()
-                    break
-            }
-        }
-
-        return matches
+    const params = new URLSearchParams({
+        page: currentPage,
+        pageSize: usersPerPage
     })
 
-    currentPage = 1
-    renderUsers()
-    renderPagination()
+    if (searchTerm) params.append('searchTerm', searchTerm)
+    if (roleFilter) params.append('role', roleFilter)
+    if (statusFilter) {
+        const isActive = statusFilter === 'active'
+        params.append('isActive', isActive)
+    }
+    if (dateFilter) params.append('dateFilter', dateFilter)
+
+    console.log('Applying filters with params:', params.toString())
+
+    try {
+        const response = await fetch('/Admin/GetUsers?' + params)
+        if (response.ok) {
+            const data = await response.json()
+            console.log('Filter response:', data)
+            users = data.users
+            filteredUsers = [...users]
+            renderUsers()
+            renderPagination(data.totalPages, data.totalCount)
+        } else {
+            console.error('Filter request failed:', response.status)
+        }
+    } catch (error) {
+        console.error('Error applying filters:', error)
+    }
 }
 
 function clearFilters() {
     document.getElementById("roleFilter").value = ""
     document.getElementById("statusFilter").value = ""
     document.getElementById("dateFilter").value = ""
-    document.getElementById("verificationFilter").value = ""
     document.getElementById("searchInput").value = ""
 
-    filteredUsers = [...users]
     currentPage = 1
-    renderUsers()
-    renderPagination()
+    loadUsers()
 }
 
 function renderUsers() {
-    const startIndex = (currentPage - 1) * usersPerPage
-    const endIndex = startIndex + usersPerPage
-    const paginatedUsers = filteredUsers.slice(startIndex, endIndex)
-
     const tbody = document.getElementById("usersTableBody")
-    tbody.innerHTML = paginatedUsers
+    tbody.innerHTML = users
         .map(
             (user) => `
         <tr>
             <td>
-                <input type="checkbox" class="user-checkbox" value="${user.id}" onchange="toggleUserSelection(${user.id})">
+                <input type="checkbox" class="user-checkbox" value="${user.userId}" onchange="toggleUserSelection(${user.userId})">
             </td>
             <td>
                 <div class="d-flex align-items-center">
-                    <img src="${user.avatar}" alt="${user.firstName}" class="rounded-circle me-2" width="40" height="40">
+                    <img src="${user.avatarUrl || '/placeholder.svg?height=40&width=40'}" alt="${user.fullName}" class="rounded-circle me-2" width="40" height="40">
                     <div>
-                        <div class="fw-bold">${user.firstName} ${user.lastName}</div>
+                        <div class="fw-bold">${user.fullName}</div>
                         <small class="text-muted">${user.email}</small>
-                        ${user.verified ? '<i class="fas fa-check-circle text-success ms-1" title="Verified"></i>' : '<i class="fas fa-exclamation-circle text-warning ms-1" title="Unverified"></i>'}
                     </div>
                 </div>
             </td>
@@ -228,21 +110,21 @@ function renderUsers() {
                 <span class="badge bg-${getRoleBadgeColor(user.role)}">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span>
             </td>
             <td>
-                <span class="badge bg-${getStatusBadgeColor(user.status)}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span>
+                <span class="badge bg-${getStatusBadgeColor(user.isActive)}">${user.isActive ? 'Active' : 'Inactive'}</span>
             </td>
-            <td>${formatDate(user.registrationDate)}</td>
+            <td>${formatDate(user.createdAt)}</td>
             <td>${user.lastLogin}</td>
             <td>
                 <div class="btn-group" role="group">
-                    <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id})" title="Edit">
+                    <a href="/Admin/UserEdit/${user.userId}" class="btn btn-sm btn-outline-primary" title="Edit">
                         <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-info" onclick="viewUser(${user.id})" title="View">
+                    </a>
+                    <a href="/Admin/UserDetail/${user.userId}" class="btn btn-sm btn-outline-info" title="View">
                         <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})" title="Delete">
+                    </a>
+                    <a href="/Admin/UserDelete/${user.userId}" class="btn btn-sm btn-outline-danger" title="Delete">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </a>
                 </div>
             </td>
         </tr>
@@ -251,15 +133,13 @@ function renderUsers() {
         .join("")
 }
 
-function renderPagination() {
-    const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
+function renderPagination(totalPages, totalCount) {
     const pagination = document.getElementById("pagination")
-
     let paginationHTML = ""
 
     // Previous button
     paginationHTML += `
-        <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a>
         </li>
     `
@@ -268,7 +148,7 @@ function renderPagination() {
     for (let i = 1; i <= totalPages; i++) {
         if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
             paginationHTML += `
-                <li class="page-item ${i === currentPage ? "active" : ""}">
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
                     <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
                 </li>
             `
@@ -279,7 +159,7 @@ function renderPagination() {
 
     // Next button
     paginationHTML += `
-        <li class="page-item ${currentPage === totalPages ? "disabled" : ""}">
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
             <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a>
         </li>
     `
@@ -287,52 +167,46 @@ function renderPagination() {
     pagination.innerHTML = paginationHTML
 }
 
-function changePage(page) {
-    if (page >= 1 && page <= Math.ceil(filteredUsers.length / usersPerPage)) {
-        currentPage = page
-        renderUsers()
-        renderPagination()
-    }
+async function changePage(page) {
+    currentPage = page
+    await applyFilters()
 }
 
 function getRoleBadgeColor(role) {
-    const colors = {
-        patient: "primary",
-        doctor: "success",
-        admin: "danger",
-        staff: "info",
+    switch (role.toLowerCase()) {
+        case "admin":
+            return "danger"
+        case "doctor":
+            return "primary"
+        case "staff":
+            return "warning"
+        case "patient":
+            return "success"
+        default:
+            return "secondary"
     }
-    return colors[role] || "secondary"
 }
 
-function getStatusBadgeColor(status) {
-    const colors = {
-        active: "success",
-        inactive: "secondary",
-        suspended: "danger",
-        pending: "warning",
-    }
-    return colors[status] || "secondary"
+function getStatusBadgeColor(isActive) {
+    return isActive ? "success" : "secondary"
 }
 
 function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    })
+    if (!dateString) return "N/A"
+    const date = new Date(dateString)
+    return date.toLocaleDateString()
 }
 
 function toggleSelectAll() {
-    const selectAll = document.getElementById("selectAll")
-    const checkboxes = document.querySelectorAll(".user-checkbox")
+    const selectAllCheckbox = document.getElementById("selectAll")
+    const userCheckboxes = document.querySelectorAll(".user-checkbox")
 
-    checkboxes.forEach((checkbox) => {
-        checkbox.checked = selectAll.checked
-        if (selectAll.checked) {
-            selectedUsers.add(Number.parseInt(checkbox.value))
+    userCheckboxes.forEach((checkbox) => {
+        checkbox.checked = selectAllCheckbox.checked
+        if (selectAllCheckbox.checked) {
+            selectedUsers.add(parseInt(checkbox.value))
         } else {
-            selectedUsers.delete(Number.parseInt(checkbox.value))
+            selectedUsers.delete(parseInt(checkbox.value))
         }
     })
 
@@ -352,198 +226,175 @@ function toggleUserSelection(userId) {
 function updateBulkActions() {
     const bulkActionsCard = document.getElementById("bulkActionsCard")
     const selectedCount = document.getElementById("selectedCount")
+    const selectAllCheckbox = document.getElementById("selectAll")
 
     if (selectedUsers.size > 0) {
         bulkActionsCard.style.display = "block"
         selectedCount.textContent = selectedUsers.size
+
+        // Update select all checkbox
+        const userCheckboxes = document.querySelectorAll(".user-checkbox")
+        const checkedCount = Array.from(userCheckboxes).filter(cb => cb.checked).length
+        selectAllCheckbox.checked = checkedCount === userCheckboxes.length
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < userCheckboxes.length
     } else {
         bulkActionsCard.style.display = "none"
+        selectAllCheckbox.checked = false
+        selectAllCheckbox.indeterminate = false
     }
 }
 
-function addUser() {
+async function addUser() {
     const form = document.getElementById("addUserForm")
     const formData = new FormData(form)
+    
+    const userData = {
+        fullName: document.getElementById("firstName").value + " " + document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        phoneNumber: document.getElementById("phone").value,
+        role: document.getElementById("role").value,
+        password: document.getElementById("password").value,
+        isActive: document.getElementById("status").value === "active",
+        sendWelcomeEmail: document.getElementById("sendWelcomeEmail").checked
+    }
 
-    // Basic validation
-    if (!form.checkValidity()) {
-        form.reportValidity()
+    try {
+        const response = await fetch('/Admin/CreateUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        })
+
+        if (response.ok) {
+            const result = await response.json()
+            showAlert('success', result.message)
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide()
+            form.reset()
+            loadUsers()
+        } else {
+            const error = await response.json()
+            showAlert('danger', error.error || 'Failed to create user')
+        }
+    } catch (error) {
+        console.error('Error creating user:', error)
+        showAlert('danger', 'An error occurred while creating the user')
+    }
+}
+
+
+
+async function bulkAction(action) {
+    if (selectedUsers.size === 0) {
+        showAlert('warning', 'Please select users to perform bulk action')
         return
     }
 
-    const newUser = {
-        id: users.length + 1,
-        firstName: document.getElementById("firstName").value,
-        lastName: document.getElementById("lastName").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        role: document.getElementById("role").value,
-        status: document.getElementById("status").value,
-        registrationDate: new Date().toISOString().split("T")[0],
-        lastLogin: "Never",
-        verified: false,
-        avatar: "/placeholder.svg?height=40&width=40",
-    }
+    if (!confirm(`Are you sure you want to ${action} ${selectedUsers.size} user(s)?`)) return
 
-    users.push(newUser)
-    filteredUsers = [...users]
-    renderUsers()
-    renderPagination()
-
-    // Close modal and reset form
-    const modal = bootstrap.Modal.getInstance(document.getElementById("addUserModal"))
-    modal.hide()
-    form.reset()
-
-    alert("User added successfully!")
-}
-
-function editUser(userId) {
-    const user = users.find((u) => u.id === userId)
-    if (!user) return
-
-    // Populate edit form
-    document.getElementById("editUserId").value = user.id
-    document.getElementById("editFirstName").value = user.firstName
-    document.getElementById("editLastName").value = user.lastName
-    document.getElementById("editEmail").value = user.email
-    document.getElementById("editPhone").value = user.phone
-    document.getElementById("editRole").value = user.role
-    document.getElementById("editStatus").value = user.status
-
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById("editUserModal"))
-    modal.show()
-}
-
-function updateUser() {
-    const userId = Number.parseInt(document.getElementById("editUserId").value)
-    const userIndex = users.findIndex((u) => u.id === userId)
-
-    if (userIndex === -1) return
-
-    // Update user data
-    users[userIndex] = {
-        ...users[userIndex],
-        firstName: document.getElementById("editFirstName").value,
-        lastName: document.getElementById("editLastName").value,
-        email: document.getElementById("editEmail").value,
-        phone: document.getElementById("editPhone").value,
-        role: document.getElementById("editRole").value,
-        status: document.getElementById("editStatus").value,
-    }
-
-    filteredUsers = [...users]
-    renderUsers()
-
-    // Close modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById("editUserModal"))
-    modal.hide()
-
-    alert("User updated successfully!")
-}
-
-function viewUser(userId) {
-    const user = users.find((u) => u.id === userId)
-    if (!user) return
-
-    alert(
-        `User Details:\nName: ${user.firstName} ${user.lastName}\nEmail: ${user.email}\nRole: ${user.role}\nStatus: ${user.status}`,
-    )
-}
-
-function deleteUser(userId) {
-    if (confirm("Are you sure you want to delete this user?")) {
-        users = users.filter((u) => u.id !== userId)
-        filteredUsers = [...users]
-        renderUsers()
-        renderPagination()
-        alert("User deleted successfully!")
-    }
-}
-
-function bulkAction(action) {
-    if (selectedUsers.size === 0) return
-
-    const actionText = action === "activate" ? "activate" : action === "suspend" ? "suspend" : "delete"
-
-    if (confirm(`Are you sure you want to ${actionText} ${selectedUsers.size} selected users?`)) {
-        selectedUsers.forEach((userId) => {
-            const userIndex = users.findIndex((u) => u.id === userId)
-            if (userIndex !== -1) {
-                if (action === "delete") {
-                    users.splice(userIndex, 1)
-                } else if (action === "activate") {
-                    users[userIndex].status = "active"
-                } else if (action === "suspend") {
-                    users[userIndex].status = "suspended"
-                }
-            }
+    try {
+        const response = await fetch('/Admin/BulkAction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userIds: Array.from(selectedUsers),
+                action: action
+            })
         })
 
-        selectedUsers.clear()
-        filteredUsers = [...users]
-        renderUsers()
-        renderPagination()
-        updateBulkActions()
-
-        alert(`Bulk ${actionText} completed successfully!`)
+        if (response.ok) {
+            const result = await response.json()
+            showAlert('success', result.message)
+            selectedUsers.clear()
+            updateBulkActions()
+            loadUsers()
+        } else {
+            const error = await response.json()
+            showAlert('danger', error.error || `Failed to perform bulk ${action}`)
+        }
+    } catch (error) {
+        console.error('Error performing bulk action:', error)
+        showAlert('danger', `An error occurred while performing bulk ${action}`)
     }
 }
 
 function exportUsers(format) {
-    if (format === "csv") {
+    if (format === 'csv') {
         exportToCSV()
-    } else if (format === "pdf") {
+    } else if (format === 'pdf') {
         exportToPDF()
     }
 }
 
 function exportToCSV() {
-    const headers = [
-        "ID",
-        "First Name",
-        "Last Name",
-        "Email",
-        "Phone",
-        "Role",
-        "Status",
-        "Registration Date",
-        "Last Login",
-    ]
+    const headers = ['Name', 'Email', 'Role', 'Status', 'Registration Date', 'Last Login']
     const csvContent = [
-        headers.join(","),
-        ...filteredUsers.map((user) =>
-            [
-                user.id,
-                user.firstName,
-                user.lastName,
-                user.email,
-                user.phone,
-                user.role,
-                user.status,
-                user.registrationDate,
-                user.lastLogin,
-            ].join(","),
-        ),
-    ].join("\n")
+        headers.join(','),
+        ...users.map(user => [
+            user.fullName,
+            user.email,
+            user.role,
+            user.isActive ? 'Active' : 'Inactive',
+            formatDate(user.createdAt),
+            user.lastLogin
+        ].join(','))
+    ].join('\n')
 
-    const blob = new Blob([csvContent], { type: "text/csv" })
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
+    const a = document.createElement('a')
     a.href = url
-    a.download = "users.csv"
+    a.download = 'users.csv'
     a.click()
     window.URL.revokeObjectURL(url)
 }
 
 function exportToPDF() {
-    alert("PDF export functionality would be implemented here using a library like jsPDF")
+    // Implement PDF export functionality
+    alert('PDF export functionality would be implemented here')
 }
 
-function logout() {
-    if (confirm("Are you sure you want to logout?")) {
-        localStorage.clear()
-        window.location.href = "index.html"
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div')
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `
+    
+    const container = document.querySelector('.main-content')
+    container.insertBefore(alertDiv, container.firstChild)
+    
+    setTimeout(() => {
+        alertDiv.remove()
+    }, 5000)
+}
+
+function debounce(func, wait) {
+    let timeout
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout)
+            func(...args)
+        }
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+    }
+}
+
+// Debug function to check users in database
+async function debugUsers() {
+    try {
+        const response = await fetch('/Admin/DebugUsers')
+        if (response.ok) {
+            const data = await response.json()
+            console.log('Debug users data:', data)
+            alert(`Total users: ${data.totalUsers}\nRoles: ${data.roles.join(', ')}`)
+        }
+    } catch (error) {
+        console.error('Error debugging users:', error)
     }
 }
