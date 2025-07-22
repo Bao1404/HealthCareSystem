@@ -1,497 +1,361 @@
-﻿// Admin Dashboard functionality
-let appointmentChart, patientStatusChart, appointmentOverviewChart
-const Chart = window.Chart
+﻿// dashboard.js - Updated version
+let appointmentChart = null;
+let appointmentOverviewChart = null;
+let patientStatusChart = null;
+let currentAppointmentPeriod = 'monthly';
+let appointmentData = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-    initializeCharts()
-    loadAppointmentStatistics()
-    loadRecentPatients()
-    loadSystemAlerts()
-    updateStatistics()
-})
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function () {
+    initializeCharts();
+    loadAppointmentStatistics();
+});
 
 function initializeCharts() {
-    // Appointment Trends Chart
-    const appointmentCtx = document.getElementById("appointmentChart")
-    if (appointmentCtx) {
-        appointmentChart = new Chart(appointmentCtx.getContext("2d"), {
-            type: "line",
-            data: {
-                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                datasets: [
-                    {
-                        label: "Appointments",
-                        data: [45, 52, 48, 55, 62, 58, 65, 72, 68, 75, 82, 78],
-                        borderColor: "#3b82f6",
-                        backgroundColor: "rgba(59, 130, 246, 0.1)",
-                        tension: 0.4,
-                        fill: true,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false,
-                    },
-                    tooltip: {
-                        callbacks: {
-                            title: function(context) {
-                                const dataIndex = context[0].dataIndex
-                                const currentPeriod = window.currentAppointmentPeriod || 'monthly'
-                                
-                                if (currentPeriod === 'daily' && window.appointmentData) {
-                                    return window.appointmentData.dailyAppointmentTrends[dataIndex]?.date || context[0].label
-                                } else if (currentPeriod === 'weekly' && window.appointmentData) {
-                                    return window.appointmentData.weeklyAppointmentTrends[dataIndex]?.period || context[0].label
-                                }
-                                return context[0].label
-                            },
-                            label: function(context) {
-                                return `Appointments: ${context.parsed.y}`
-                            }
-                        }
+    // Initialize Appointment Trends Chart
+    const appointmentCtx = document.getElementById('appointmentTrendsChart').getContext('2d');
+    appointmentChart = new Chart(appointmentCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Appointments',
+                data: [],
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#e2e8f0",
-                        },
-                    },
-                    x: {
-                        grid: {
-                            color: "#e2e8f0",
-                        },
-                    },
-                },
+                }
             },
-        })
-    }
-
-    // Patient Status Chart
-    const patientStatusCtx = document.getElementById("patientStatusChart")
-    if (patientStatusCtx) {
-        patientStatusChart = new Chart(patientStatusCtx.getContext("2d"), {
-            type: "doughnut",
-            data: {
-                labels: ["Active", "Inactive"],
-                datasets: [
-                    {
-                        data: [85, 15],
-                        backgroundColor: ["#10b981", "#6b7280"],
-                        borderWidth: 0,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "bottom",
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                        },
-                    },
-                },
-            },
-        })
-    }
-
-    // Appointment Overview Chart
-    const appointmentOverviewCtx = document.getElementById("appointmentOverviewChart")
-    if (appointmentOverviewCtx) {
-        appointmentOverviewChart = new Chart(appointmentOverviewCtx.getContext("2d"), {
-            type: "bar",
-            data: {
-                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                datasets: [
-                    {
-                        label: "Confirmed",
-                        data: [45, 52, 48, 61, 55, 67, 73, 69, 78, 85, 89, 94],
-                        backgroundColor: "rgba(16, 185, 129, 0.8)",
-                        borderColor: "#10b981",
-                        borderWidth: 1,
-                        borderRadius: 4,
-                    },
-                    {
-                        label: "Pending",
-                        data: [12, 15, 18, 22, 19, 25, 28, 24, 30, 35, 32, 38],
-                        backgroundColor: "rgba(245, 158, 11, 0.8)",
-                        borderColor: "#f59e0b",
-                        borderWidth: 1,
-                        borderRadius: 4,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: "top",
-                    },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: "#e2e8f0",
-                        },
-                        ticks: {
-                            callback: (value) => value + " appointments",
-                        },
-                    },
-                    x: {
-                        grid: {
-                            display: false,
-                        },
-                    },
-                },
-            },
-        })
-    }
-}
-
-function updateAppointmentChart(period) {
-    if (appointmentChart && window.appointmentData) {
-        let newData, newLabels
-        
-        switch (period) {
-            case "daily":
-                newData = window.appointmentData.dailyAppointmentTrends.map(t => t.count)
-                newLabels = window.appointmentData.dailyAppointmentTrends.map(t => t.day)
-                break
-            case "weekly":
-                newData = window.appointmentData.weeklyAppointmentTrends.map(t => t.count)
-                newLabels = window.appointmentData.weeklyAppointmentTrends.map(t => t.week)
-                break
-            case "monthly":
-                newData = window.appointmentData.appointmentTrends.map(t => t.count)
-                newLabels = window.appointmentData.appointmentTrends.map(t => t.month)
-                break
-            default:
-                return
-        }
-        
-        appointmentChart.data.labels = newLabels
-        appointmentChart.data.datasets[0].data = newData
-        appointmentChart.update()
-        
-        // Track current period for tooltips
-        window.currentAppointmentPeriod = period
-        
-        // Calculate and update period statistics
-        updatePeriodStats(newData)
-        
-        // Update the dropdown button text
-        const dropdownButton = document.querySelector('.card-header .dropdown-toggle')
-        if (dropdownButton) {
-            switch (period) {
-                case "daily":
-                    dropdownButton.textContent = "Last 7 Days"
-                    break
-                case "weekly":
-                    dropdownButton.textContent = "Last 12 Weeks"
-                    break
-                case "monthly":
-                    dropdownButton.textContent = "Last 12 Months"
-                    break
+            plugins: {
+                legend: {
+                    display: false
+                }
             }
         }
-    }
-}
+    });
 
-function updatePatientStatusChart() {
-    if (patientStatusChart) {
-        // Switch back to status distribution
-        patientStatusChart.data.labels = ["Active", "Inactive"]
-        patientStatusChart.data.datasets[0].data = [85, 15]
-        patientStatusChart.data.datasets[0].backgroundColor = ["#10b981", "#6b7280"]
-        patientStatusChart.update()
-    }
-}
-
-function updatePatientAgeChart() {
-    if (patientStatusChart) {
-        // Switch to age distribution
-        patientStatusChart.data.labels = ["18-25", "26-35", "36-45", "46-55", "56-65", "65+"]
-        patientStatusChart.data.datasets[0].data = [25, 35, 28, 20, 15, 12]
-        patientStatusChart.data.datasets[0].backgroundColor = ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444"]
-        patientStatusChart.update()
-    }
-}
-
-function updatePeriodStats(data) {
-    if (!data || data.length === 0) return
-    
-    const total = data.reduce((sum, value) => sum + value, 0)
-    const average = Math.round((total / data.length) * 10) / 10
-    const peak = Math.max(...data)
-    
-    document.getElementById('periodTotal').textContent = total
-    document.getElementById('periodAverage').textContent = average
-    document.getElementById('periodPeak').textContent = peak
-}
-
-function updateAppointmentOverviewChart(period) {
-    let confirmedData, pendingData, newLabels
-
-    // Use real data if available, otherwise fall back to mock data
-    if (window.appointmentData && window.appointmentData.appointmentOverviewData) {
-        switch (period) {
-            case "daily":
-                // For daily view, we'll use the last 7 days from the appointment data
-                const last7Days = window.appointmentData.dailyAppointmentTrends || []
-                confirmedData = last7Days.map(t => Math.floor(t.count * 0.7)) // Estimate 70% confirmed
-                pendingData = last7Days.map(t => Math.floor(t.count * 0.3))   // Estimate 30% pending
-                newLabels = last7Days.map(t => t.day)
-                break
-            case "weekly":
-                // For weekly view, we'll use the weekly trends data
-                const weeklyData = window.appointmentData.weeklyAppointmentTrends || []
-                confirmedData = weeklyData.map(t => Math.floor(t.count * 0.7))
-                pendingData = weeklyData.map(t => Math.floor(t.count * 0.3))
-                newLabels = weeklyData.map(t => t.week)
-                break
-            case "monthly":
-                // Use the real monthly data from database
-                confirmedData = window.appointmentData.appointmentOverviewData.map(t => t.confirmed)
-                pendingData = window.appointmentData.appointmentOverviewData.map(t => t.pending)
-                newLabels = window.appointmentData.appointmentOverviewData.map(t => t.month)
-                break
+    // Initialize Appointment Overview Chart
+    const overviewCtx = document.getElementById('appointmentOverviewChart').getContext('2d');
+    appointmentOverviewChart = new Chart(overviewCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Confirmed',
+                data: [],
+                backgroundColor: '#1cc88a',
+                borderColor: '#1cc88a',
+                borderWidth: 1
+            }, {
+                label: 'Pending',
+                data: [],
+                backgroundColor: '#f6c23e',
+                borderColor: '#f6c23e',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
         }
-    } else {
-        // Fallback to mock data if real data is not available
-        switch (period) {
-            case "daily":
-                confirmedData = [8, 12, 9, 15, 11, 13, 16]
-                pendingData = [3, 5, 4, 7, 6, 8, 9]
-                newLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                break
-            case "weekly":
-                confirmedData = [45, 52, 48, 61, 55, 67, 73, 69, 78, 85, 89, 94]
-                pendingData = [12, 15, 18, 22, 19, 25, 28, 24, 30, 35, 32, 38]
-                newLabels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8", "Week 9", "Week 10", "Week 11", "Week 12"]
-                break
-            case "monthly":
-                confirmedData = [45, 52, 48, 61, 55, 67, 73, 69, 78, 85, 89, 94]
-                pendingData = [12, 15, 18, 22, 19, 25, 28, 24, 30, 35, 32, 38]
-                newLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-                break
+    });
+
+    // Initialize Patient Status Chart
+    const statusCtx = document.getElementById('patientStatusChart').getContext('2d');
+    patientStatusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
         }
-    }
-
-    appointmentOverviewChart.data.datasets[0].data = confirmedData
-    appointmentOverviewChart.data.datasets[1].data = pendingData
-    appointmentOverviewChart.data.labels = newLabels
-    appointmentOverviewChart.update()
-
-    // Update button states
-    document.querySelectorAll(".card-header .btn").forEach((btn) => {
-        btn.classList.remove("btn-primary")
-        btn.classList.add("btn-outline-primary")
-    })
-    event.target.classList.remove("btn-outline-primary")
-    event.target.classList.add("btn-primary")
+    });
 }
 
 async function loadAppointmentStatistics() {
     try {
-        const response = await fetch('/Admin/GetDashboardStatistics')
+        const response = await fetch('/Admin/GetDashboardStatistics');
         if (response.ok) {
-            const data = await response.json()
-            
+            const data = await response.json();
+
+            console.log('=== FULL RECEIVED DATA ===');
+            console.log(data);
+            console.log('=== STATUS DISTRIBUTION ===');
+            console.log(data.statusDistribution);
+            console.log('=== APPOINTMENT TRENDS ===');
+            console.log(data.appointmentTrends);
+            console.log('=== DAILY TRENDS ===');
+            console.log(data.dailyAppointmentTrends);
+            console.log('=== WEEKLY TRENDS ===');
+            console.log(data.weeklyAppointmentTrends);
+
             // Update statistics cards
-            document.getElementById('totalPatients').textContent = data.totalPatients
-            document.getElementById('activePatients').textContent = data.activePatients
-            document.getElementById('totalAppointments').textContent = data.totalAppointments
-            document.getElementById('confirmedAppointments').textContent = data.confirmedAppointments
-            document.getElementById('pendingAppointments').textContent = data.pendingAppointments
-            
-            // Update growth indicators
-            const patientGrowth = document.getElementById('patientGrowth')
-            const newPatients = document.getElementById('newPatients')
-            const confirmedGrowth = document.getElementById('confirmedGrowth')
-            const pendingGrowth = document.getElementById('pendingGrowth')
-            
-            if (data.newPatientsThisMonth > 0) {
-                patientGrowth.textContent = `+${data.newPatientsThisMonth} this month`
-                patientGrowth.className = 'text-success'
+            document.getElementById('totalPatients').textContent = data.totalPatients || 0;
+            document.getElementById('activePatients').textContent = data.activePatients || 0;
+            document.getElementById('totalAppointments').textContent = data.totalAppointments || 0;
+            document.getElementById('pendingAppointments').textContent = data.pendingAppointments || 0;
+
+            // Store data globally
+            window.appointmentData = data;
+            window.currentAppointmentPeriod = 'monthly';
+
+            // Update appointment trends chart - FIX: Check data exists
+            if (appointmentChart && data.appointmentTrends && data.appointmentTrends.length > 0) {
+                console.log('Updating appointment trends chart...');
+                appointmentChart.data.labels = data.appointmentTrends.map(t => t.month);
+                appointmentChart.data.datasets[0].data = data.appointmentTrends.map(t => t.count);
+                appointmentChart.update();
+
+                // Update period stats
+                updatePeriodStats(data.appointmentTrends.map(t => t.count));
             } else {
-                patientGrowth.textContent = 'No new patients this month'
-                patientGrowth.className = 'text-muted'
+                console.warn('No appointment trends data available');
             }
-            
-            if (data.newPatientsThisWeek > 0) {
-                newPatients.textContent = `+${data.newPatientsThisWeek} this week`
-                newPatients.className = 'text-info'
+
+            // Update appointment overview chart
+            if (appointmentOverviewChart && data.appointmentOverviewData && data.appointmentOverviewData.length > 0) {
+                console.log('Updating appointment overview chart...');
+                appointmentOverviewChart.data.labels = data.appointmentOverviewData.map(t => t.month);
+                appointmentOverviewChart.data.datasets[0].data = data.appointmentOverviewData.map(t => t.confirmed);
+                appointmentOverviewChart.data.datasets[1].data = data.appointmentOverviewData.map(t => t.pending);
+                appointmentOverviewChart.update();
+            }
+
+            // Update patient status chart - FIX: Debug and ensure data
+            if (patientStatusChart && data.statusDistribution && data.statusDistribution.length > 0) {
+                console.log('Updating patient status chart...');
+                console.log('Status data:', data.statusDistribution);
+
+                patientStatusChart.data.labels = data.statusDistribution.map(s => s.status);
+                patientStatusChart.data.datasets[0].data = data.statusDistribution.map(s => s.count);
+                patientStatusChart.data.datasets[0].backgroundColor = data.statusDistribution.map(s => s.color);
+                patientStatusChart.update();
+
+                // Update patient status legend
+                updatePatientStatusLegend(data.statusDistribution);
             } else {
-                newPatients.textContent = 'No new patients this week'
-                newPatients.className = 'text-muted'
+                console.warn('No patient status distribution data available');
+                console.log('Status distribution:', data.statusDistribution);
             }
-            
-            // Update appointment growth indicators
-            if (data.confirmedAppointments > 0) {
-                confirmedGrowth.textContent = `${data.confirmedAppointments} confirmed`
-                confirmedGrowth.className = 'text-success'
-            } else {
-                confirmedGrowth.textContent = 'No confirmed appointments'
-                confirmedGrowth.className = 'text-muted'
-            }
-            
-            if (data.pendingAppointments > 0) {
-                pendingGrowth.textContent = `${data.pendingAppointments} pending`
-                pendingGrowth.className = 'text-warning'
-            } else {
-                pendingGrowth.textContent = 'No pending appointments'
-                pendingGrowth.className = 'text-muted'
-            }
-            
-            // Update appointment trends chart
-            if (appointmentChart) {
-                appointmentChart.data.labels = data.appointmentTrends.map(t => t.month)
-                appointmentChart.data.datasets[0].data = data.appointmentTrends.map(t => t.count)
-                appointmentChart.update()
-            }
-            
-            // Update appointment overview chart with real data
-            if (appointmentOverviewChart && data.appointmentOverviewData) {
-                appointmentOverviewChart.data.labels = data.appointmentOverviewData.map(t => t.month)
-                appointmentOverviewChart.data.datasets[0].data = data.appointmentOverviewData.map(t => t.confirmed)
-                appointmentOverviewChart.data.datasets[1].data = data.appointmentOverviewData.map(t => t.pending)
-                appointmentOverviewChart.update()
-            }
-            
-            // Store the trend data for chart updates
-            window.appointmentData = data
-            
-            // Initialize period stats for monthly view
-            updatePeriodStats(data.appointmentTrends.map(t => t.count))
-            window.currentAppointmentPeriod = 'monthly'
-            
-            // Update patient status chart
-            if (patientStatusChart) {
-                patientStatusChart.data.datasets[0].data = data.statusDistribution.map(s => s.count)
-                patientStatusChart.update()
-            }
-            
-            // Update recent patients list
+
+            // Update recent patients
             if (data.recentPatients) {
-                updateRecentPatientsList(data.recentPatients)
+                updateRecentPatientsList(data.recentPatients);
             }
-            
+
+            // Update growth indicators
+            updateGrowthIndicators(data);
+
         } else {
-            console.error('Failed to load appointment statistics')
+            console.error('Failed to load appointment statistics:', response.status);
         }
     } catch (error) {
-        console.error('Error loading appointment statistics:', error)
+        console.error('Error loading appointment statistics:', error);
     }
 }
 
-function loadRecentPatients() {
-    // This will be populated by the loadPatientStatistics function
-    // For now, show a loading message
-    const container = document.getElementById("recentPatients")
-    container.innerHTML = '<div class="text-center text-muted">Loading recent patients...</div>'
+function updateGrowthIndicators(data) {
+    const patientGrowth = document.getElementById('patientGrowth');
+    const newPatients = document.getElementById('newPatients');
+    const confirmedGrowth = document.getElementById('confirmedGrowth');
+    const pendingGrowth = document.getElementById('pendingGrowth');
+
+    if (patientGrowth && data.newPatientsThisMonth >= 0) {
+        patientGrowth.textContent = `+${data.newPatientsThisMonth} this month`;
+        patientGrowth.className = 'text-success';
+    }
+
+    if (newPatients && data.newPatientsThisWeek >= 0) {
+        newPatients.textContent = `+${data.newPatientsThisWeek} this week`;
+        newPatients.className = 'text-info';
+    }
+
+    if (confirmedGrowth) {
+        confirmedGrowth.textContent = `${data.confirmedAppointments || 0} confirmed`;
+        confirmedGrowth.className = 'text-success';
+    }
+
+    if (pendingGrowth) {
+        pendingGrowth.textContent = `${data.pendingAppointments || 0} pending`;
+        pendingGrowth.className = 'text-warning';
+    }
 }
 
-// Update the loadRecentPatients function to show actual data
-async function updateRecentPatientsList(patients) {
-    const container = document.getElementById("recentPatients")
-    
+function updatePeriodStats(data) {
+    if (!data || data.length === 0) {
+        document.getElementById('totalPeriodAppointments').textContent = 0;
+        document.getElementById('averageAppointments').textContent = 0;
+        document.getElementById('peakAppointments').textContent = 0;
+        return;
+    }
+
+    const total = data.reduce((sum, val) => sum + val, 0);
+    const average = Math.round(total / data.length);
+    const peak = Math.max(...data);
+
+    document.getElementById('totalPeriodAppointments').textContent = total;
+    document.getElementById('averageAppointments').textContent = average;
+    document.getElementById('peakAppointments').textContent = peak;
+}
+
+function updatePatientStatusLegend(statusData) {
+    const legendContainer = document.getElementById('patientStatusLegend');
+    if (!legendContainer) return;
+
+    legendContainer.innerHTML = '';
+
+    if (!statusData || statusData.length === 0) {
+        legendContainer.innerHTML = '<div class="text-center text-muted">No data available</div>';
+        return;
+    }
+
+    const totalCount = statusData.reduce((sum, s) => sum + s.count, 0);
+
+    statusData.forEach(item => {
+        const percentage = totalCount > 0 ? ((item.count / totalCount) * 100).toFixed(1) : 0;
+        const legendItem = document.createElement('div');
+        legendItem.className = 'd-flex justify-content-between align-items-center mb-2';
+        legendItem.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div style="width: 12px; height: 12px; background-color: ${item.color}; border-radius: 50%; margin-right: 8px;"></div>
+                <span>${item.status}</span>
+            </div>
+            <div>
+                <strong>${item.count}</strong> (${percentage}%)
+            </div>
+        `;
+        legendContainer.appendChild(legendItem);
+    });
+}
+
+function updateRecentPatientsList(patients) {
+    const container = document.getElementById('recentPatientsList');
+    if (!container) return;
+
+    container.innerHTML = '';
+
     if (!patients || patients.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted">No recent patient registrations</div>'
-        return
+        container.innerHTML = '<div class="text-center text-muted">No recent patients</div>';
+        return;
     }
-    
-    container.innerHTML = patients.map(patient => `
-        <div class="activity-item">
-            <div class="activity-icon">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="activity-content">
-                <div class="activity-text">
-                    <strong>${patient.name}</strong> registered
+
+    patients.forEach(patient => {
+        const patientItem = document.createElement('div');
+        patientItem.className = 'patient-item';
+        patientItem.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="font-weight-bold">${patient.name}</div>
+                    <div class="text-muted small">${patient.email}</div>
+                    <div class="text-muted small">${patient.registeredAt}</div>
                 </div>
-                <div class="activity-meta">
-                    <span class="text-muted">${patient.email}</span>
-                    <span class="badge bg-${patient.status === 'Active' ? 'success' : 'secondary'}">${patient.status}</span>
-                </div>
-                <small class="text-muted">${patient.registeredAt}</small>
+                <span class="status-badge ${patient.status === 'Active' ? 'bg-success text-white' : 'bg-secondary text-white'}">
+                    ${patient.status}
+                </span>
             </div>
-        </div>
-    `).join('')
+        `;
+        container.appendChild(patientItem);
+    });
 }
 
-function loadSystemAlerts() {
-    const alerts = [
-        {
-            type: "warning",
-            message: "Server storage is 85% full",
-            time: "5 minutes ago",
-            icon: "fa-exclamation-triangle",
-        },
-        {
-            type: "info",
-            message: "System backup completed successfully",
-            time: "1 hour ago",
-            icon: "fa-info-circle",
-        },
-        {
-            type: "success",
-            message: "Database optimization completed",
-            time: "2 hours ago",
-            icon: "fa-check-circle",
-        },
-        {
-            type: "error",
-            message: "Failed login attempts detected",
-            time: "3 hours ago",
-            icon: "fa-times-circle",
-        },
-    ]
+// FIX: Improve changePeriod function
+function changePeriod() {
+    const period = document.getElementById('periodSelector').value;
+    console.log('Changing period to:', period);
+    console.log('Available data:', window.appointmentData);
 
-    const container = document.getElementById("systemAlerts")
-    container.innerHTML = alerts
-        .map(
-            (alert) => `
-        <div class="alert-item ${alert.type}">
-            <div class="alert-icon">
-                <i class="fas ${alert.icon}"></i>
-            </div>
-            <div class="alert-content">
-                <div class="alert-message">${alert.message}</div>
-                <div class="alert-time">${alert.time}</div>
-            </div>
-        </div>
-    `,
-        )
-        .join("")
+    currentAppointmentPeriod = period;
+
+    if (!window.appointmentData) {
+        console.warn('No appointment data available');
+        return;
+    }
+
+    let trendsData = [];
+    let labels = [];
+
+    switch (period) {
+        case 'daily':
+            if (window.appointmentData.dailyAppointmentTrends) {
+                trendsData = window.appointmentData.dailyAppointmentTrends;
+                labels = trendsData.map(t => t.day);
+                console.log('Daily data:', trendsData);
+            } else {
+                console.warn('No daily appointment trends data');
+            }
+            break;
+        case 'weekly':
+            if (window.appointmentData.weeklyAppointmentTrends) {
+                trendsData = window.appointmentData.weeklyAppointmentTrends;
+                labels = trendsData.map(t => t.week);
+                console.log('Weekly data:', trendsData);
+            } else {
+                console.warn('No weekly appointment trends data');
+            }
+            break;
+        case 'monthly':
+        default:
+            if (window.appointmentData.appointmentTrends) {
+                trendsData = window.appointmentData.appointmentTrends;
+                labels = trendsData.map(t => t.month);
+                console.log('Monthly data:', trendsData);
+            } else {
+                console.warn('No monthly appointment trends data');
+            }
+            break;
+    }
+
+    if (appointmentChart && trendsData.length > 0) {
+        console.log('Updating chart with:', { labels, data: trendsData.map(t => t.count) });
+        appointmentChart.data.labels = labels;
+        appointmentChart.data.datasets[0].data = trendsData.map(t => t.count);
+        appointmentChart.update();
+
+        // Update period stats
+        updatePeriodStats(trendsData.map(t => t.count));
+    } else {
+        console.warn('Cannot update chart - no data or chart not initialized');
+    }
 }
 
-function updateStatistics() {
-    // Simulate real-time updates
-    setInterval(() => {
-        const totalUsers = document.getElementById("totalUsers")
-        const currentUsers = Number.parseInt(totalUsers.textContent.replace(",", ""))
-        totalUsers.textContent = (currentUsers + Math.floor(Math.random() * 3)).toLocaleString()
-
-        const totalAppointments = document.getElementById("totalAppointments")
-        const currentAppointments = Number.parseInt(totalAppointments.textContent.replace(",", ""))
-        totalAppointments.textContent = (currentAppointments + Math.floor(Math.random() * 5)).toLocaleString()
-    }, 30000) // Update every 30 seconds
-}
-
-function logout() {
-    if (confirm("Are you sure you want to logout?")) {
-        localStorage.clear()
-        window.location.href = "index.html"
+// Add confirmed appointments display
+function updateConfirmedAppointments(data) {
+    const confirmedElement = document.getElementById('confirmedAppointments');
+    if (confirmedElement) {
+        confirmedElement.textContent = data.confirmedAppointments || 0;
     }
 }
