@@ -64,9 +64,9 @@ namespace Services.Service
             return await _patientRepository.GetActivePatientsAsync(doctorId);
         }
 
-        public async Task UpdateImageUrlPatient(string url, int userId)
+        public async Task UpdateImageUrlDoctor(string url, int userId)
         {
-            await _patientRepository.UpdateImageUrlPatient(url, userId);
+            await _doctorRepository.UpdateImageUrlDoctor(url, userId);
         }
     }
 }
