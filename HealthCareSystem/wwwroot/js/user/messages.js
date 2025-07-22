@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function setupSignalR(conversationId) {
+    currentConversation = conversations.find((c) => c.conversationId === conversationId)
+
     conversationId = String(conversationId);
     if (!conversationId || typeof conversationId !== 'string' || conversationId.trim() === '') {
         console.error("conversationId không hợp lệ:", conversationId);
@@ -21,7 +23,7 @@ async function setupSignalR(conversationId) {
     conversationId = conversationId.trim();
 
             var senderIdPatient = document.getElementById("PatientId").innerText;
-            var patientName = document.getElementById("userName").innerText;
+    var patientName = currentConversation.patientUser?.fullName;
     if (!connection) {
         connection = new signalR.HubConnectionBuilder()
             .withUrl(`/chathub?conversationId=${encodeURIComponent(conversationId)}`)
@@ -51,7 +53,7 @@ async function setupSignalR(conversationId) {
                 localStorage.setItem("doctorName", doctorName);
 
                 // Chuyển hướng đến trang Call.html
-                window.location.href = `/static/Call2.html?conversationId=${conversationId}&patientId=${senderIdPatient}`;
+                window.location.href = `/static/Call2.html?conversationId=${conversationId}&patientId=${senderIdPatient}&patientName=${patientName}`;
             }
         });
 

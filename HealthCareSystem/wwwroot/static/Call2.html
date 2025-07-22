@@ -36,7 +36,7 @@
 
             const appID = 2014403071;
             const serverSecret = "43c18caae5ebb0f27ab9ab2a11f73535";
-            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userName, PatienID);
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, PatienID, patientName);
 
             const zp = ZegoUIKitPrebuilt.create(kitToken);
             zp.joinRoom({
