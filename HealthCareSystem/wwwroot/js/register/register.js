@@ -100,6 +100,7 @@ function setupMedicalConditions() {
 }
 
 function nextStep() {
+    console.log("click");
     if (validateCurrentStep()) {
         if (currentStep < totalSteps) {
             // Special handling for role-based flow

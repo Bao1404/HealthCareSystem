@@ -3182,7 +3182,7 @@ input:checked + .slider {
 
 /* Role Selection */
 .role-selection {
-    display: grid;
+/*    display: grid;*/
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1rem;

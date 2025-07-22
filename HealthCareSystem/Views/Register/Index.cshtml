@@ -51,7 +51,7 @@
                             <div class="step-content">
                                 <div class="row">
                                     <div class="mb-3">
-                                        <label for="firstName" class="form-label">First Name *</label>
+                                        <label for="firstName" class="form-label">Full Name *</label>
                                         <input asp-for="FullName" type="text" class="form-control" id="firstName" name="FullName" required>
                                         <span asp-validation-for="FullName" class="invalid-feedback"></span>
                                     </div>
@@ -83,7 +83,7 @@
                                                 <label for="rolePatient"></label>
                                             </div>
                                         </div>
-                                        <div class="role-card" data-role="doctor">
+                                        @* <div class="role-card" data-role="doctor">
                                             <div class="role-icon">
                                                 <i class="fas fa-user-md"></i>
                                             </div>
@@ -93,7 +93,7 @@
                                                 <input asp-for="Role" type="radio" id="roleDoctor" name="role" value="Doctor" required>
                                                 <label for="roleDoctor"></label>
                                             </div>
-                                        </div>
+                                        </div> *@
                                     </div>
                                     <div class="invalid-feedback">Please select your role.</div>
                                 </div>
