@@ -5,7 +5,7 @@ let connection = null;
 document.addEventListener("DOMContentLoaded", () => {
     const userId = localStorage.getItem("patientId");
     console.log("Loaded patientId:", userId);
-    updateUserInfo();
+        
     loadConversations();
     setupEventListeners();
 });
