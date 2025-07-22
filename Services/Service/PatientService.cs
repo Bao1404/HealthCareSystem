@@ -21,7 +21,7 @@ namespace Services.Service
         public Task UpdatePatient(Patient patient) => _patientRepository.Update(patient);
         public void DeletePatient(int id) => _patientRepository.Delete(id);
         public Task CreatePatient(Patient patient) => _patientRepository.CreatePatient(patient);
-        public async Task<Patient?> GetByUserIdAsync(int userId) => await _patientRepository.GetByUserIdAsync(userId);
+        public Task<Patient?> GetByUserIdAsync(int userId) => _patientRepository.GetByUserIdAsync(userId);
         public Task<List<Patient>> GetAllPatientsAsync() => _patientRepository.GetAllPatientsAsync();
         public async Task<List<Patient>> GetPatientsByDoctorAsync(int doctorId)
         {

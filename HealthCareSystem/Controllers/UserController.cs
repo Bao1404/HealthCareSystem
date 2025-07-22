@@ -325,26 +325,27 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Messages(int conversationId)
+        public async Task<IActionResult> Messages(int conversationId)
         {
-            var patientId = HttpContext.Session.GetInt32("UserId");
 
-            if (patientId == null)
+            if (currentUser == null)
             {
-                return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
+                return RedirectToAction("Index", "Login"); 
             }
 
-            var conversation = _conversationRepository.GetConversationById(conversationId); // Đảm bảo phương thức này tồn tại trong repository
+            var conversation = await _conversationRepository.GetConversationsByPatientId(currentUser.Value); 
 
             if (conversation == null)
             {
-                return RedirectToAction("Index", "Home"); // Hoặc hiển thị thông báo lỗi
+                return RedirectToAction("Index", "Home"); 
             }
 
-            ViewData["PatientId"] = patientId;
-            ViewData["ConversationId"] = conversationId; // Truyền conversationId ra view
+            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+
+            ViewData["PatientId"] = currentUser.Value;
+            ViewData["ConversationId"] = conversationId; 
             ViewData["ActiveMenu"] = "Messages";
-            return View();
+            return View(patient);
         }
 
         public async Task<IActionResult> ChatBox()

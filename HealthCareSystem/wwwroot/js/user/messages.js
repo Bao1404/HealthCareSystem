@@ -92,10 +92,10 @@ function showNotification(message, type = "info") {
         }
     }, 10000);
 }
-function updateUserInfo() {
-    const userName = localStorage.getItem("userName") || "Patient User"
-    document.getElementById("userName").textContent = userName
-}
+//function updateUserInfo() {
+//    const userName = localStorage.getItem("userName")
+//    document.getElementById("userName").textContent = userName
+//}
 
 async function loadConversations() {
     const userId = localStorage.getItem("patientId")
