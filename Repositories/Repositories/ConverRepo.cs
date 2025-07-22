@@ -120,5 +120,18 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
+        public async Task<Conversation> CreateAsync(Conversation conversation)
+        {
+            _context.Conversations.Add(conversation);
+            await _context.SaveChangesAsync();
+            return conversation; // Trả về đối tượng cuộc trò chuyện đã tạo
+        }
+        public async Task<Conversation> FindConversationByPatientIdAndDoctorId(int patientUserId, int doctorUserId)
+        {
+            return await _context.Conversations
+                .Include(c => c.PatientUser)
+                .Include(c => c.DoctorUser)
+                .FirstOrDefaultAsync(c => c.PatientUserId == patientUserId && c.DoctorUserId == doctorUserId);
+        }
     }
 }

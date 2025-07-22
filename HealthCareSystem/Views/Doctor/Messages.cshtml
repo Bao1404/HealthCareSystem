@@ -11,10 +11,10 @@
     <!-- Header -->
     <header class="header">
         <h1 class="header-title">Messages</h1>
-        <div class="search-container">
+        @* <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-input" placeholder="Search conversations..." id="searchInput">
-        </div>
+        </div> *@
         <div class="header-actions">
             <button class="notification-btn">
                 <i class="fas fa-bell"></i>
@@ -23,7 +23,7 @@
             <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
                 <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
-                    <h6 id="">@Model.User.FullName</h6>
+                    <h6 id="doctorName">@Model.User.FullName</h6>
                     <p>@Model.Specialty.Name</p>
                 </div>
             </a>
@@ -59,17 +59,8 @@
                             </div>
                         </div>
                         <div class="chat-actions">
-                            <button class="chat-action-btn" onclick="startVideoCall()" title="Video Call">
-                                <i class="fas fa-video"></i>
-                            </button>
                             <button class="chat-action-btn" onclick="startVoiceCall()" title="Voice Call">
                                 <i class="fas fa-phone"></i>
-                            </button>
-                            <button class="chat-action-btn" onclick="viewPatientProfile()" title="View Profile">
-                                <i class="fas fa-user"></i>
-                            </button>
-                            <button class="chat-action-btn" onclick="scheduleAppointment()" title="Schedule Appointment">
-                                <i class="fas fa-calendar-plus"></i>
                             </button>
                         </div>
                     </div>

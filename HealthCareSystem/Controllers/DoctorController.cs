@@ -71,25 +71,213 @@ namespace HealthCareSystem.Controllers
 
             return View(doctor);
         }
-        public async Task<IActionResult> Patients()
+        public async Task<IActionResult> Patients(string filter = "all", string search = "")
         {
-            if (currentUser == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
-            var patients = await _patientService.GetAllPatientsAsync();
+            ViewData["ActiveMenu"] = "Patients";
 
-            var model = new DoctorAndPatientViewModel
+            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+            var patientsViewModel = await BuildPatientsViewModelAsync(doctorId, filter, search);
+            var doctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
+            ViewBag.Doctor = doctor;
+            ViewBag.CurrentSearch = search;
+
+            return View(patientsViewModel);
+        }
+
+        public async Task<IActionResult> PatientDetails(int id)
+        {
+            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
+            var patient = await _patientService.GetPatientWithDetailsAsync(id);
+            var doctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
+            ViewBag.Doctor = doctor;
+            if (patient == null)
             {
-                Doctor = doctor,
-                Patients = patients
+                TempData["ErrorMessage"] = "Patient not found.";
+                return RedirectToAction("Patients");
+            }
+
+            // Check if this patient belongs to the current doctor
+            var hasAccess = patient.Appointments.Any(a => a.DoctorUserId == doctorId);
+            if (!hasAccess)
+            {
+                TempData["ErrorMessage"] = "You don't have access to this patient's information.";
+                return RedirectToAction("Patients");
+            }
+
+            var viewModel = await BuildPatientDetailsViewModelAsync(patient, doctorId);
+            return View(viewModel);
+        }
+
+        private async Task<PatientsViewModel> BuildPatientsViewModelAsync(int doctorId, string filter, string search)
+        {
+            List<Patient> patients;
+
+            // Apply search filter first if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                patients = await _patientService.SearchPatientsAsync(doctorId, search);
+            }
+            else
+            {
+                // Get patients based on filter
+                patients = filter.ToLower() switch
+                {
+                    "active" => await _patientService.GetActivePatientsAsync(doctorId),
+                    "critical" => await _patientService.GetCriticalPatientsAsync(doctorId),
+                    "follow-up" => await _patientService.GetFollowUpPatientsAsync(doctorId),
+                    "new" => await _patientService.GetNewPatientsAsync(doctorId, 30),
+                    _ => await _patientService.GetPatientsByDoctorAsync(doctorId)
+                };
+            }
+
+            var patientInfos = patients.Select(p => MapToPatientInfo(p)).ToList();
+
+            // Get counts for filters (always get all data for counts)
+            var allPatients = await _patientService.GetPatientsByDoctorAsync(doctorId);
+            var activePatients = await _patientService.GetActivePatientsAsync(doctorId);
+            var criticalPatients = await _patientService.GetCriticalPatientsAsync(doctorId);
+            var followUpPatients = await _patientService.GetFollowUpPatientsAsync(doctorId);
+            var newPatients = await _patientService.GetNewPatientsAsync(doctorId, 30);
+
+            return new PatientsViewModel
+            {
+                AllPatients = allPatients.Select(p => MapToPatientInfo(p)).ToList(),
+                FilteredPatients = patientInfos,
+                CurrentFilter = filter,
+                TotalPatients = allPatients.Count,
+                ActivePatients = activePatients.Count,
+                CriticalPatients = criticalPatients.Count,
+                FollowUpPatients = followUpPatients.Count,
+                NewPatients = newPatients.Count
+            };
+        }
+
+        private PatientInfo MapToPatientInfo(Patient patient)
+        {
+            var doctorAppointments = patient.Appointments.OrderBy(a => a.AppointmentDateTime).ToList();
+            var lastAppointment = doctorAppointments.LastOrDefault(a => a.AppointmentDateTime <= DateTime.Now);
+            var nextAppointment = doctorAppointments.FirstOrDefault(a => a.AppointmentDateTime > DateTime.Now && a.Status != "Cancelled");
+
+            var age = patient.DateOfBirth.HasValue
+                ? DateTime.Now.Year - patient.DateOfBirth.Value.Year
+                : (int?)null;
+
+            // Determine patient status
+            var status = GetPatientStatus(patient);
+            var statusColor = GetPatientStatusColor(status);
+
+            return new PatientInfo
+            {
+                UserId = patient.UserId,
+                FullName = patient.User.FullName,
+                Email = patient.User.Email,
+                Phone = patient.User.PhoneNumber,
+                Gender = patient.Gender,
+                DateOfBirth = patient.DateOfBirth,
+                Age = age,
+                BloodType = patient.BloodType,
+                Allergies = patient.Allergies,
+                Weight = patient.Weight,
+                Height = patient.Height,
+                Bmi = patient.Bmi,
+                Address = patient.Address,
+                EmergencyPhoneNumber = patient.EmergencyPhoneNumber,
+                AvatarUrl = patient.User.AvatarUrl ?? "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+                LastAppointment = lastAppointment?.AppointmentDateTime,
+                NextAppointment = nextAppointment?.AppointmentDateTime,
+                TotalAppointments = doctorAppointments.Count,
+                CompletedAppointments = doctorAppointments.Count(a => a.Status == "Completed"),
+                PatientStatus = status,
+                StatusColor = statusColor,
+                CreatedAt = patient.CreatedAt,
+                CreatedAtDisplay = patient.CreatedAt?.ToString("MMM dd, yyyy") ?? "N/A",
+                RecentAppointments = doctorAppointments.TakeLast(3).Select(a => new RecentAppointment
+                {
+                    AppointmentId = a.AppointmentId,
+                    AppointmentDateTime = a.AppointmentDateTime,
+                    Status = a.Status ?? "Unknown",
+                    Notes = a.Notes ?? "",
+                    AppointmentType = GetAppointmentType(a.Notes),
+                    DateDisplay = a.AppointmentDateTime.ToString("MMM dd"),
+                    TimeDisplay = a.AppointmentDateTime.ToString("HH:mm")
+                }).ToList()
+            };
+        }
+
+        private async Task<PatientDetailsViewModel> BuildPatientDetailsViewModelAsync(Patient patient, int doctorId)
+        {
+            var doctorAppointments = patient.Appointments
+                .Where(a => a.DoctorUserId == doctorId)
+                .OrderByDescending(a => a.AppointmentDateTime)
+                .ToList();
+
+            var appointmentHistory = doctorAppointments.Select(a => new AppointmentHistory
+            {
+                AppointmentId = a.AppointmentId,
+                AppointmentDateTime = a.AppointmentDateTime,
+                Status = a.Status ?? "Unknown",
+                Notes = a.Notes ?? "",
+                AppointmentType = GetAppointmentType(a.Notes),
+                DoctorNotes = a.Notes ?? "",
+                CreatedAt = a.CreatedAt
+            }).ToList();
+
+            var statistics = new PatientStatistics
+            {
+                TotalAppointments = doctorAppointments.Count,
+                CompletedAppointments = doctorAppointments.Count(a => a.Status == "Completed"),
+                CancelledAppointments = doctorAppointments.Count(a => a.Status == "Cancelled"),
+                FirstAppointment = doctorAppointments.LastOrDefault()?.AppointmentDateTime,
+                LastAppointment = doctorAppointments.FirstOrDefault()?.AppointmentDateTime,
+                PatientSince = patient.CreatedAt?.ToString("MMMM yyyy") ?? "Unknown"
             };
 
-
-            ViewData["ActiveMenu"] = "Patients";
-            return View(model);
+            return new PatientDetailsViewModel
+            {
+                Patient = MapToPatientInfo(patient),
+                AppointmentHistory = appointmentHistory,
+                MedicalRecords = patient.Appointments
+                    .SelectMany(a => a.MedicalRecords)
+                    .OrderByDescending(mr => mr.CreatedAt)
+                    .ToList(),
+                Statistics = statistics
+            };
         }
+
+        private string GetPatientStatus(Patient patient)
+        {
+            var recentAppointments = patient.Appointments
+                .Where(a => a.AppointmentDateTime >= DateTime.Now.AddDays(-30))
+                .ToList();
+
+            if (recentAppointments.Any(a => a.Notes != null && a.Notes.ToLower().Contains("emergency")))
+                return "Critical";
+
+            if (recentAppointments.Any(a => a.Notes != null && a.Notes.ToLower().Contains("follow-up")))
+                return "Follow-up";
+
+            if (patient.CreatedAt >= DateTime.Now.AddDays(-30))
+                return "New";
+
+            if (recentAppointments.Any(a => a.Status == "Completed" || a.Status == "Confirmed"))
+                return "Active";
+
+            return "Inactive";
+        }
+
+        private string GetPatientStatusColor(string status)
+        {
+            return status.ToLower() switch
+            {
+                "active" => "success",
+                "critical" => "danger",
+                "follow-up" => "warning",
+                "new" => "info",
+                "inactive" => "secondary",
+                _ => "secondary"
+            };
+        }
+
         public async Task<IActionResult> Schedule(DateTime? week)
         {
             if (currentUser == null)
@@ -135,6 +323,7 @@ namespace HealthCareSystem.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
+            ViewData["DoctorId"] = currentUser.Value;
             var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
             return View(doctor);
         }
@@ -375,7 +564,7 @@ namespace HealthCareSystem.Controllers
                 return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
         }
-        [HttpPost("/updateImageDoctor")]
+        [HttpPost("/updateImage")]
         public async Task<IActionResult> UploadImage(IFormFile avatar)
         {
             try
@@ -778,7 +967,7 @@ namespace HealthCareSystem.Controllers
                 .Where(p => p.Appointments.Any())
                 .OrderByDescending(p => p.Appointments.Max(a => a.AppointmentDateTime))
                 .Take(5)
-                //.Select(p => MapToPatientInfo(p))
+                .Select(p => MapToPatientInfo(p))
                 .ToList();
 
             // Build urgent notifications (mock data for now)
@@ -803,7 +992,7 @@ namespace HealthCareSystem.Controllers
                 CurrentDoctor = currentDoctor ?? new Doctor(),
                 Stats = stats,
                 TodaySchedule = todaySchedule,
-                //RecentPatients = recentPatients,
+                RecentPatients = recentPatients,
                 UrgentNotifications = urgentNotifications,
                 WeeklyStats = weeklyStats,
                 PendingAppointments = mappedPendingAppointments

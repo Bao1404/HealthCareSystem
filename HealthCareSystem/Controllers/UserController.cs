@@ -1,7 +1,7 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.Models;
-using HealthCareSystem.Service;
 using Microsoft.AspNetCore.Mvc;
+using Repositories.IRepositories;
 using Services;
 using Services.Interface;
 using System.Threading.Tasks;
@@ -17,13 +17,13 @@ namespace HealthCareSystem.Controllers
         private readonly IAppointmentService _appointmentService;
         private readonly IPatientService _patientService;
         private readonly IMedicalHistoriesService _medicalHistoriesService;
-
-        private readonly PhotoService _photoService;
+        private readonly IConversationRepository _conversationRepository;
 
         public UserController(IUserService userService, IDoctorService doctorService,
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
             IPatientService patientService,
-            IMedicalHistoriesService medicalHistoriesService, PhotoService photoService)
+            IMedicalHistoriesService medicalHistoriesService,
+            IConversationRepository conversationRepository)
         {
             _userService = userService;
             _doctorService = doctorService;
@@ -31,7 +31,7 @@ namespace HealthCareSystem.Controllers
             _appointmentService = appointmentService;
             _patientService = patientService;
             _medicalHistoriesService = medicalHistoriesService;
-            _photoService = photoService;
+            _conversationRepository = conversationRepository;
         }
         public async Task<IActionResult> Index()
         {
@@ -325,19 +325,29 @@ namespace HealthCareSystem.Controllers
 
             return View();
         }
-        public IActionResult Messages()
+        public async Task<IActionResult> Messages(int conversationId)
         {
-            var patientId = HttpContext.Session.GetInt32("UserId");
 
-            if (patientId == null)
+            if (currentUser == null)
             {
-                return RedirectToAction("Index", "Login"); // hoặc thông báo lỗi
+                return RedirectToAction("Index", "Login"); 
             }
 
-            ViewData["PatientId"] = patientId; // nếu muốn gửi ra View
+            var conversation = await _conversationRepository.GetConversationsByPatientId(currentUser.Value); 
+
+            if (conversation == null)
+            {
+                return RedirectToAction("Index", "Home"); 
+            }
+
+            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+
+            ViewData["PatientId"] = currentUser.Value;
+            ViewData["ConversationId"] = conversationId; 
             ViewData["ActiveMenu"] = "Messages";
-            return View();
+            return View(patient);
         }
+
         public async Task<IActionResult> ChatBox()
         {
             if(currentUser == null)
@@ -768,32 +778,6 @@ namespace HealthCareSystem.Controllers
             {
                 TempData["Error"] = "An error occurred while cancelling: " + ex.Message;
                 return RedirectToAction("Appointments");
-            }
-        }
-        [HttpPost("/updateImageUser")]
-        public async Task<IActionResult> UploadImage(IFormFile avatar)
-        {
-            try
-            {
-                if (avatar == null || avatar.Length == 0)
-                {
-                    return BadRequest("No file uploaded.");
-                }
-
-                var imageUrl = await _photoService.UploadImageAsync(avatar);
-                if (imageUrl != null)
-                {
-                    await _patientService.UpdateImageUrlPatient(imageUrl, currentUser.Value);
-
-                    return Json(new { success = true, message = "Update image successfully" });
-                }
-
-                return Json(new { success = false, message = "Update image error" });
-            }
-            catch (Exception ex)
-            {
-                // Trả về một JSON với thông báo lỗi
-                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
         }
     }

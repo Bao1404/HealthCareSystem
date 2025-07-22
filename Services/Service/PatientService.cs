@@ -1,6 +1,5 @@
 using BusinessObjects;
 using Repositories.Interface;
-using Repositories.Repositories;
 using Services.Interface;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace Services.Service
         public Task UpdatePatient(Patient patient) => _patientRepository.Update(patient);
         public void DeletePatient(int id) => _patientRepository.Delete(id);
         public Task CreatePatient(Patient patient) => _patientRepository.CreatePatient(patient);
-        public async Task<Patient?> GetByUserIdAsync(int userId) => await _patientRepository.GetByUserIdAsync(userId);
+        public Task<Patient?> GetByUserIdAsync(int userId) => _patientRepository.GetByUserIdAsync(userId);
         public Task<List<Patient>> GetAllPatientsAsync() => _patientRepository.GetAllPatientsAsync();
         public async Task<List<Patient>> GetPatientsByDoctorAsync(int doctorId)
         {
@@ -62,11 +61,6 @@ namespace Services.Service
         public async Task<List<Patient>> GetActivePatientsAsync(int doctorId)
         {
             return await _patientRepository.GetActivePatientsAsync(doctorId);
-        }
-
-        public async Task UpdateImageUrlPatient(string url, int userId)
-        {
-            await _patientRepository.UpdateImageUrlPatient(url, userId);
         }
     }
 }
