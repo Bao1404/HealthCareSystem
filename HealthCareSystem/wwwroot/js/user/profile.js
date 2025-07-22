@@ -68,8 +68,76 @@ function editInsurance() {
 }
 
 function changeAvatar() {
-    alert("Avatar change functionality would be implemented here")
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // Update avatar display
+                document.querySelector(".profile-avatar-xl").src = e.target.result;
+                document.querySelector(".user-avatar").src = e.target.result;
+
+                // Save to localStorage (in real app, upload to server)
+                localStorage.setItem("doctorAvatar", e.target.result);
+
+                // Show notification
+                showNotification("Avatar updated successfully!", "success");
+
+                // Upload avatar to server via AJAX
+                uploadAvatarToServer(file);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    input.click();
 }
+
+function uploadAvatarToServer(file) {
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    // Gọi AJAX để upload ảnh lên server
+    $.ajax({
+        url: '/updateImagePatient',  // Đường dẫn đến action trong Controller
+        type: 'POST',
+        data: formData,
+        processData: false,  // Không chuyển đổi dữ liệu (FormData)
+        contentType: false,  // Để trình duyệt tự động xử lý kiểu content-type
+        success: function (response) {
+            // Xử lý sau khi upload thành công
+            if (response.success) {
+                showNotification(response.message, "success");
+            } else {
+                showNotification(response.message, "error");
+            }
+        },
+        error: function (xhr, status, error) {
+            showNotification("Avatar update error!", "error");
+        }
+    });
+}
+
+
+function showNotification(message, type = "info") {
+    const notification = document.createElement("div")
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`
+    notification.style.cssText = "top: 20px; right: 20px; z-index: 9999;"
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `
+    document.body.appendChild(notification)
+
+    setTimeout(() => {
+        notification.remove()
+    }, 3000)
+}
+
 
 function addAllergy() {
     const allergy = prompt("Enter new allergy:")
@@ -97,12 +165,5 @@ function deleteAccount() {
         if (confirm("This will permanently delete all your data. Are you absolutely sure?")) {
             alert("Account deletion would be processed here")
         }
-    }
-}
-
-function logout() {
-    if (confirm("Are you sure you want to logout?")) {
-        localStorage.clear()
-        window.location.href = "index.html"
     }
 }
