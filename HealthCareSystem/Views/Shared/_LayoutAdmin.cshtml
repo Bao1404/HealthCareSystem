@@ -31,7 +31,7 @@
                 </div>
                 <span class="sidebar-text">User Management</span>
             </a>
-            <a asp-controller="Admin" asp-action="Contents" class="sidebar-item @(ViewData["ActiveMenu"] == "ContentManagement" ? "active" : "")">
+            @* <a asp-controller="Admin" asp-action="Contents" class="sidebar-item @(ViewData["ActiveMenu"] == "ContentManagement" ? "active" : "")">
                 <div class="sidebar-icon">
                     <i class="fas fa-file-alt"></i>
                 </div>
@@ -48,7 +48,7 @@
                     <i class="fas fa-chart-bar"></i>
                 </div>
                 <span class="sidebar-text">Reports</span>
-            </a>
+            </a> *@
             <a asp-controller="Admin" asp-action="ManageDoctors" class="sidebar-item @(ViewData["ActiveMenu"] == "Reports" ? "active" : "")">
                 <div class="sidebar-icon">
                     <i class="fas fa-users"></i>

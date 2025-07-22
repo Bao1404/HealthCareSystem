@@ -14,11 +14,12 @@
     <script>
         window.onload = function () {
             // Lấy dữ liệu từ localStorage
-            const conversationId = localStorage.getItem("conversationId");
-            const patientId = localStorage.getItem("patientId");
-            const patientName = localStorage.getItem("patientName") || "Unknown Patient";
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationId = urlParams.get("conversationId");
+            const patientId = urlParams.get("patientId") || "1";
+            const patientName = urlParams.get("patientName") || "Unknown Patient";
 
-            if (!conversationId || !patientId) {
+            if (!conversationId ) {
                 console.error("Missing conversationId or patientId in localStorage");
                 alert("Cannot start call: Missing required data");
                 return;
@@ -27,13 +28,15 @@
             // Sử dụng conversationId làm roomID
             const roomID = conversationId;
             // Sử dụng patientId làm userID
-            const userID = patientId;
+            const PatienID = Math.floor(Math.random() * 10000) + "";
+;
+            console.log(PatienID);
             // Sử dụng patientName làm userName
             const userName = patientName;
 
             const appID = 2014403071;
             const serverSecret = "43c18caae5ebb0f27ab9ab2a11f73535";
-            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userName, PatienID);
 
             const zp = ZegoUIKitPrebuilt.create(kitToken);
             zp.joinRoom({
@@ -59,7 +62,7 @@
                 showLayoutButton: false,
             });
 
-            console.log("Starting call with roomID:", roomID, "userName:", userName, "userID:", userID);
+            console.log("Starting call with roomID:", roomID, "userName:", userName);
         };
     </script>
 </body>

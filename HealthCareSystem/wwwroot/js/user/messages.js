@@ -3,7 +3,7 @@ let conversations = [];
 let connection = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const userId = localStorage.getItem("patientId");
+    const userId = document.getElementById("PatientId").innerText;
     console.log("Loaded patientId:", userId);
         
     loadConversations();
@@ -19,6 +19,9 @@ async function setupSignalR(conversationId) {
     }
 
     conversationId = conversationId.trim();
+
+            var senderIdPatient = document.getElementById("PatientId").innerText;
+            var patientName = document.getElementById("userName").innerText;
     if (!connection) {
         connection = new signalR.HubConnectionBuilder()
             .withUrl(`/chathub?conversationId=${encodeURIComponent(conversationId)}`)
@@ -44,11 +47,11 @@ async function setupSignalR(conversationId) {
             if (confirm(`Bạn có cuộc gọi đến từ ${senderId} (${doctorName}). Bạn muốn tham gia không?`)) {
                 // Lưu các biến vào localStorage
                 localStorage.setItem("conversationId", conversationId);
-                localStorage.setItem("senderId", senderId);
+                localStorage.setItem("senderId", senderIdPatient);
                 localStorage.setItem("doctorName", doctorName);
 
                 // Chuyển hướng đến trang Call.html
-                window.location.href = `/static/Call2.html?conversationId=${conversationId}`;
+                window.location.href = `/static/Call2.html?conversationId=${conversationId}&patientId=${senderIdPatient}`;
             }
         });
 
@@ -98,7 +101,7 @@ function showNotification(message, type = "info") {
 //}
 
 async function loadConversations() {
-    const userId = localStorage.getItem("patientId")
+    const userId = document.getElementById("PatientId").innerText;
     console.log("Loaded patientId:", userId)
     if (!userId) return
 
@@ -214,7 +217,7 @@ async function sendMessage(event) {
     if (!messageText) return;
 
     const conversationId = currentConversation.conversationId;
-    const senderId = parseInt(localStorage.getItem("patientId")); // 👈 role: bệnh nhân
+    const senderId = parseInt(document.getElementById("PatientId").innerText); // 👈 role: bệnh nhân
     const receiverId = currentConversation.doctorUser?.userId;
 
     console.log("👤 Sender (patient):", senderId);
