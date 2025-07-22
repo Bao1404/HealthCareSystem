@@ -1,6 +1,5 @@
 using BusinessObjects;
 using Repositories.Interface;
-using Repositories.Repositories;
 using Services.Interface;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,11 +61,6 @@ namespace Services.Service
         public async Task<List<Patient>> GetActivePatientsAsync(int doctorId)
         {
             return await _patientRepository.GetActivePatientsAsync(doctorId);
-        }
-
-        public async Task UpdateImageUrlDoctor(string url, int userId)
-        {
-            await _doctorRepository.UpdateImageUrlDoctor(url, userId);
         }
     }
 }

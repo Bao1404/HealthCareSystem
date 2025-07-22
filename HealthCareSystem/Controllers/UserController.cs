@@ -1,6 +1,5 @@
 ﻿using BusinessObjects;
 using HealthCareSystem.Models;
-using HealthCareSystem.Service;
 using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepositories;
 using Services;
@@ -20,13 +19,11 @@ namespace HealthCareSystem.Controllers
         private readonly IMedicalHistoriesService _medicalHistoriesService;
         private readonly IConversationRepository _conversationRepository;
 
-        private readonly PhotoService _photoService;
-
         public UserController(IUserService userService, IDoctorService doctorService,
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
             IPatientService patientService,
             IMedicalHistoriesService medicalHistoriesService,
-            IConversationRepository conversationRepository, PhotoService photoService)
+            IConversationRepository conversationRepository)
         {
             _userService = userService;
             _doctorService = doctorService;
@@ -35,7 +32,6 @@ namespace HealthCareSystem.Controllers
             _patientService = patientService;
             _medicalHistoriesService = medicalHistoriesService;
             _conversationRepository = conversationRepository;
-            _photoService = photoService;
         }
         public async Task<IActionResult> Index()
         {
@@ -782,33 +778,6 @@ namespace HealthCareSystem.Controllers
             {
                 TempData["Error"] = "An error occurred while cancelling: " + ex.Message;
                 return RedirectToAction("Appointments");
-            }
-        }
-
-        [HttpPost("/updateImagePatient")]
-        public async Task<IActionResult> UploadImage(IFormFile avatar)
-        {
-            try
-            {
-                if (avatar == null || avatar.Length == 0)
-                {
-                    return BadRequest("No file uploaded.");
-                }
-
-                var imageUrl = await _photoService.UploadImageAsync(avatar);
-                if (imageUrl != null)
-                {
-                    await _patientService.UpdateImageUrlPatient(imageUrl, currentUser.Value);
-
-                    return Json(new { success = true, message = "Update image successfully" });
-                }
-
-                return Json(new { success = false, message = "Update image error" });
-            }
-            catch (Exception ex)
-            {
-                // Trả về một JSON với thông báo lỗi
-                return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
         }
     }

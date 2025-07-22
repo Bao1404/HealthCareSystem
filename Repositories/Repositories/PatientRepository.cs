@@ -179,22 +179,5 @@ namespace Repositories.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateImageUrlPatient(string url, int userId)
-        {
-            try
-            {
-                var patient = await _context.Patients.Include(d => d.User).FirstOrDefaultAsync(d => d.UserId == userId);
-                if (patient != null)
-                {
-                    patient.User.AvatarUrl = url;
-                    _context.Patients.Update(patient);
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
     }
 }
