@@ -564,7 +564,7 @@ namespace HealthCareSystem.Controllers
                 return Json(new { success = false, message = $"An error occurred: {ex.Message}" });
             }
         }
-        [HttpPost("/updateImage")]
+        [HttpPost("/updateImageDoctor")]
         public async Task<IActionResult> UploadImage(IFormFile avatar)
         {
             try
