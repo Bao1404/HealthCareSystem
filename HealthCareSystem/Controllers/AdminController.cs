@@ -30,34 +30,33 @@ namespace HealthCareSystem.Controllers
             try
             {
                 var allUsers = await _userService.GetAllUsers();
-
+                
                 // Patient statistics
-                var patients = allUsers.Where(u => u.Role.ToLower() == "patient").ToList();
+                var patients = allUsers.Where(u => u.Role == "patient").ToList();
                 var totalPatients = patients.Count;
                 var activePatients = patients.Count(p => p.IsActive == true);
                 var newPatientsThisMonth = patients.Count(p => p.CreatedAt >= DateTime.Now.AddDays(-30));
                 var newPatientsThisWeek = patients.Count(p => p.CreatedAt >= DateTime.Now.AddDays(-7));
-
+                
                 // Real appointment data from database
                 var allAppointments = await _appointmentService.GetAllAppointmentsAsync();
                 var totalAppointments = allAppointments.Count;
                 var confirmedAppointments = allAppointments.Count(a => a.Status == "Confirmed");
                 var pendingAppointments = allAppointments.Count(a => a.Status == "Pending");
-                var newAppointmentsThisMonth = allAppointments.Count(a => a.AppointmentDateTime >= DateTime.Now.AddDays(-30));
-                var newAppointmentsThisWeek = allAppointments.Count(a => a.AppointmentDateTime >= DateTime.Now.AddDays(-7));
+                var newAppointmentsThisMonth = allAppointments.Count(a => a.CreatedAt >= DateTime.Now.AddDays(-30));
+                var newAppointmentsThisWeek = allAppointments.Count(a => a.CreatedAt >= DateTime.Now.AddDays(-7));
 
-                // Monthly appointment trends (last 12 months)
                 var appointmentTrends = new List<object>();
                 for (int i = 11; i >= 0; i--)
                 {
                     var monthStart = DateTime.Now.AddMonths(-i).Date.AddDays(1 - DateTime.Now.AddMonths(-i).Day);
                     var monthEnd = monthStart.AddMonths(1).AddDays(-1);
                     var count = allAppointments.Count(a =>
-                        a.AppointmentDateTime >= monthStart &&
-                        a.AppointmentDateTime <= monthEnd);
+                        a.CreatedAt >= monthStart &&
+                        a.CreatedAt <= monthEnd);
                     appointmentTrends.Add(new
                     {
-                        month = monthStart.ToString("MMM yyyy"),
+                        month = monthStart.ToString("MMM"),
                         count = count
                     });
                 }
@@ -67,11 +66,11 @@ namespace HealthCareSystem.Controllers
                 for (int i = 6; i >= 0; i--)
                 {
                     var day = DateTime.Now.AddDays(-i).Date;
-                    var count = allAppointments.Count(a => a.AppointmentDateTime.Date == day);
+                    var count = allAppointments.Count(a => a.CreatedAt?.Date == day);
                     dailyAppointmentTrends.Add(new
                     {
-                        day = day.ToString("MMM dd"),
-                        date = day.ToString("yyyy-MM-dd"),
+                        day = day.ToString("ddd"),
+                        date = day.ToString("MMM dd"),
                         count = count
                     });
                 }
@@ -82,68 +81,62 @@ namespace HealthCareSystem.Controllers
                 {
                     var weekStart = DateTime.Now.AddDays(-(i * 7)).Date;
                     var weekEnd = weekStart.AddDays(6);
-                    var count = allAppointments.Count(a => a.AppointmentDateTime >= weekStart && a.AppointmentDateTime <= weekEnd);
-                    weeklyAppointmentTrends.Add(new
-                    {
-                        week = $"W{12 - i}",
+                    var count = allAppointments.Count(a => a.CreatedAt >= weekStart && a.CreatedAt <= weekEnd);
+                    weeklyAppointmentTrends.Add(new { 
+                        week = $"Week {12-i}", 
                         period = $"{weekStart:MMM dd} - {weekEnd:MMM dd}",
-                        count = count
+                        count = count 
                     });
                 }
 
-                // Patient status distribution - FIX: Đảm bảo luôn có data
-                var statusDistribution = new List<object>();
-                if (totalPatients > 0)
+                // Patient age distribution (mock data for now)
+                var ageDistribution = new List<object>
                 {
-                    statusDistribution.Add(new
-                    {
-                        status = "Active",
-                        count = activePatients,
-                        color = "#10b981"
-                    });
+                    new { age = "18-25", count = 25 },
+                    new { age = "26-35", count = 35 },
+                    new { age = "36-45", count = 28 },
+                    new { age = "46-55", count = 20 },
+                    new { age = "56-65", count = 15 },
+                    new { age = "65+", count = 12 }
+                };
 
-                    var inactivePatients = totalPatients - activePatients;
-                    if (inactivePatients > 0)
-                    {
-                        statusDistribution.Add(new
-                        {
-                            status = "Inactive",
-                            count = inactivePatients,
-                            color = "#6b7280"
-                        });
-                    }
-                }
+                // Patient status distribution
+                var statusDistribution = new List<object>
+                {
+                    new { status = "Active", count = activePatients, color = "#10b981" },
+                    new { status = "Inactive", count = totalPatients - activePatients, color = "#6b7280" }
+                };
 
                 // Recent patient registrations
                 var recentPatients = patients
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(5)
-                    .Select(p => new {
-                        name = p.FullName ?? "Unknown",
-                        email = p.Email ?? "No email",
-                        registeredAt = p.CreatedAt?.ToString("MMM dd, yyyy") ?? "Unknown",
+                    .Select(p => new { 
+                        name = p.FullName, 
+                        email = p.Email, 
+                        registeredAt = p.CreatedAt?.ToString("MMM dd, yyyy"),
                         status = p.IsActive == true ? "Active" : "Inactive"
                     })
                     .ToList();
 
-                // Appointment overview data
+                // Appointment overview data (using real data from database)
                 var appointmentOverviewData = new List<object>();
                 for (int i = 11; i >= 0; i--)
                 {
                     var monthStart = DateTime.Now.AddMonths(-i).Date.AddDays(1 - DateTime.Now.AddMonths(-i).Day);
                     var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                    var confirmedCount = allAppointments.Count(a =>
-                        a.Status == "Confirmed" &&
-                        a.CreatedAt >= monthStart &&
+                    var confirmedCount = allAppointments.Count(a => 
+                        a.Status == "Confirmed" && 
+                        a.CreatedAt >= monthStart && 
                         a.CreatedAt <= monthEnd);
-                    var pendingCount = allAppointments.Count(a =>
-                        a.Status == "Pending" &&
-                        a.CreatedAt >= monthStart &&
+                    var pendingCount = allAppointments.Count(a => 
+                        a.Status == "Pending" && 
+                        a.CreatedAt >= monthStart && 
                         a.CreatedAt <= monthEnd);
-
+                    
                     appointmentOverviewData.Add(new
                     {
-                        month = monthStart.ToString("MMM yyyy"),
+                        month = monthStart.ToString("MMM"),
                         confirmed = confirmedCount,
                         pending = pendingCount
                     });
@@ -164,6 +157,7 @@ namespace HealthCareSystem.Controllers
                     dailyAppointmentTrends = dailyAppointmentTrends,
                     weeklyAppointmentTrends = weeklyAppointmentTrends,
                     appointmentOverviewData = appointmentOverviewData,
+                    ageDistribution = ageDistribution,
                     statusDistribution = statusDistribution,
                     recentPatients = recentPatients
                 };
@@ -434,7 +428,6 @@ namespace HealthCareSystem.Controllers
                 existingUser.Role = updateUserDto.Role;
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
-                existingUser.AvatarUrl = updateUserDto.AvatarUrl;
 
                 await _userService.UpdateUser(existingUser);
 
@@ -725,7 +718,6 @@ namespace HealthCareSystem.Controllers
                 existingUser.Role = updateUserDto.Role;
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
-                existingUser.AvatarUrl = updateUserDto.AvatarUrl;
 
                 await _userService.UpdateUser(existingUser);
 

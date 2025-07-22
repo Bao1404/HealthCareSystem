@@ -31,15 +31,15 @@ namespace HealthCareSystem.Controllers
             {
                 HttpContext.Session.SetInt32("UserId", account.UserId);
 
-                if (account.Role.ToLower().Equals("patient"))
+                if (account.Role.Equals("Patient"))
                 {
                     return RedirectToAction("Index", "User");
                 }
-                if (account.Role.ToLower().Equals("doctor"))
+                if (account.Role.Equals("Doctor"))
                 {
                     return RedirectToAction("Index", "Doctor");
                 }
-                if (account.Role.ToLower().Equals("admin"))
+                if (account.Role.Equals("Admin"))
                 {
                     return RedirectToAction("Index", "Admin");
                 }

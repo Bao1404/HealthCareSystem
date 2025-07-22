@@ -73,7 +73,6 @@ namespace HealthCareSystem.Controllers.dto
         
         [Required]
         public bool IsActive { get; set; } = true;
-        public string AvatarUrl { get; set; }
     }
 
     public class UserFilterDto

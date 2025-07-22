@@ -250,6 +250,7 @@ async function addUser() {
         sendWelcomeEmail: document.getElementById("sendWelcomeEmail").checked
     }
 
+    try {
         const response = await fetch('/Admin/CreateUser', {
             method: 'POST',
             headers: {
@@ -268,6 +269,10 @@ async function addUser() {
             const error = await response.json()
             showAlert('danger', error.error || 'Failed to create user')
         }
+    } catch (error) {
+        console.error('Error creating user:', error)
+        showAlert('danger', 'An error occurred while creating the user')
+    }
 }
 
 

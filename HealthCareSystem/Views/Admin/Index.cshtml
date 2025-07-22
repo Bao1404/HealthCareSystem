@@ -29,169 +29,146 @@
         </div>
     </header>
 
-    <div class="container-fluid p-4">
+    <!-- Content -->
+    <div class="content">
         <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Patients</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalPatients">0</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    <span id="patientGrowth" class="text-success mr-2"></span>
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalAppointments">3,456</h3>
+                    <p>Total Appointments</p>
+                    <small class="text-success">+8% from last month</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalPatients">0</h3>
+                    <p>Total Patients</p>
+                    <small class="text-success" id="patientGrowth">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="activePatients">0</h3>
+                    <p>Active Patients</p>
+                    <small class="text-info" id="newPatients">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="confirmedAppointments">0</h3>
+                    <p>Confirmed Appointments</p>
+                    <small class="text-success" id="confirmedGrowth">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon yellow">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="pendingAppointments">0</h3>
+                    <p>Pending Appointments</p>
+                    <small class="text-warning" id="pendingGrowth">Loading...</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="dashboard-main-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title">Appointment Trends</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Last 12 Months
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('daily')">Last 7 Days</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('weekly')">Last 12 Weeks</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('monthly')">Last 12 Months</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="chart-stats mb-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodTotal">0</h6>
+                                    <small class="text-muted">Total</small>
                                 </div>
                             </div>
-                            <div class="col-auto">
-                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodAverage">0</h6>
+                                    <small class="text-muted">Average</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodPeak">0</h6>
+                                    <small class="text-muted">Peak</small>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="appointmentChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Patients</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="activePatients">0</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    <span id="newPatients" class="text-info mr-2"></span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title">Patient Status Distribution</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Status
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="updatePatientStatusChart()">Status</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updatePatientAgeChart()">Age Distribution</a></li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Appointments</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalAppointments">0</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    <span id="confirmedGrowth" class="text-success mr-2"></span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Appointments</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingAppointments">0</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    <span id="pendingGrowth" class="text-warning mr-2"></span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-clock fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
+                <div class="card-content">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="patientStatusChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="row">
-            <!-- Appointment Trends Chart -->
-            <div class="col-xl-8 col-lg-7">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Appointment Trends</h6>
-                        <div class="dropdown no-arrow">
-                            <select id="periodSelector" class="form-select form-select-sm" onchange="changePeriod()">
-                                <option value="daily">Daily (Last 7 days)</option>
-                                <option value="weekly">Weekly (Last 12 weeks)</option>
-                                <option value="monthly" selected>Monthly (Last 12 months)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="appointmentTrendsChart"></canvas>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <div class="row">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Average</div>
-                                    <div class="h6 mb-0 font-weight-bold" id="averageAppointments">0</div>
-                                </div>
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Peak</div>
-                                    <div class="h6 mb-0 font-weight-bold" id="peakAppointments">0</div>
-                                </div>
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Total</div>
-                                    <div class="h6 mb-0 font-weight-bold" id="totalPeriodAppointments">0</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Appointment Overview Chart -->
+        <div class="dashboard-card full-width-card">
+            <div class="card-header">
+                <h5 class="card-title">Appointment Overview</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateAppointmentOverviewChart('daily')">Daily</button>
+                    <button class="btn btn-sm btn-primary" onclick="updateAppointmentOverviewChart('weekly')">Weekly</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateAppointmentOverviewChart('monthly')">Monthly</button>
                 </div>
             </div>
-
-            <!-- Patient Status Chart -->
-            <div class="col-xl-4 col-lg-5">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Patient Status Distribution</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
-                            <canvas id="patientStatusChart"></canvas>
-                        </div>
-                        <div class="mt-4 text-center small" id="patientStatusLegend">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Second Row Charts -->
-        <div class="row">
-            <!-- Appointment Overview Chart -->
-            <div class="col-xl-8 col-lg-7">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Appointment Overview (Confirmed vs Pending)</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-area">
-                            <canvas id="appointmentOverviewChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Patients -->
-            <div class="col-xl-4 col-lg-5">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Recent Patient Registrations</h6>
-                    </div>
-                    <div class="card-body">
-                        <div id="recentPatientsList">
-                            <!-- Dynamic content -->
-                        </div>
-                    </div>
+            <div class="card-content">
+                <div class="chart-container" style="position: relative; height: 400px;">
+                    <canvas id="appointmentOverviewChart"></canvas>
                 </div>
             </div>
         </div>
